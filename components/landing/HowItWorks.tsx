@@ -12,7 +12,7 @@ function StepCard({ Icon, title, desc }: { Icon: React.ElementType; title: strin
   return (
     <div className="flex items-center gap-4 bg-[#ebe6de] rounded-full px-5 py-4 shadow-sm">
       {/* Text — naturally on the right in RTL flex */}
-      <div className="flex-1 text-end">
+      <div className="flex-1 text-start">
         <p className="font-bold text-[#2c1f12] text-sm leading-snug">{title}</p>
         <p className="text-xs text-[#78716c] mt-1 leading-relaxed">{desc}</p>
       </div>
@@ -29,17 +29,18 @@ export function HowItWorks() {
 
   return (
     <section className="relative py-20 bg-[#f2ede8] overflow-hidden">
-      <Image src="/banner-3.png" alt="" fill className="object-cover object-center -z-10" aria-hidden />
+      <Image src="/banner-3.png" alt="" fill className="object-fill -z-10" aria-hidden />
+      <Image src="/calligraphy-pattern-2.png" alt="" fill className="object-cover opacity-45 mix-blend-multiply -z-10" aria-hidden unoptimized />
       <div className="container mx-auto px-4 max-w-3xl">
         {/* Section header — Zad style */}
-        <div className="text-end mb-2">
-          <h2 className="flex items-center justify-end gap-2 text-2xl font-bold text-[#2c1f12]">
+        <div className="text-start mb-2">
+          <h2 className="flex items-center justify-start gap-2 text-2xl font-bold text-[#2c1f12]">
             <span className="text-[#c8973a] text-xl">◁</span>
             {t("title")}
           </h2>
           <p className="text-[#78716c] mt-1.5 text-sm">{t("subtitle")}</p>
         </div>
-        <div className="flex justify-end mb-8">
+        <div className="flex justify-start mb-8">
           <span className="text-[#c8973a] text-sm font-medium">اكتشف المزيد ←</span>
         </div>
 
@@ -50,7 +51,7 @@ export function HowItWorks() {
             return (
               <div key={step.num} className="grid grid-cols-[1fr_4rem_1fr] items-center gap-4">
                 {/* Left card slot */}
-                <div className="flex justify-end">
+                <div className="flex justify-start">
                   {!isRight && (
                     <div className="w-full max-w-xs">
                       <StepCard Icon={step.Icon} title={t(step.titleKey)} desc={t(step.descKey)} />

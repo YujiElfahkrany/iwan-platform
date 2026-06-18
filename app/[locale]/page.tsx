@@ -2,9 +2,11 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Hero } from "@/components/landing/Hero";
 import { StatsBar } from "@/components/landing/StatsBar";
 import { SubjectGrid } from "@/components/landing/SubjectGrid";
+import { HadithBanner } from "@/components/landing/HadithBanner";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { FAQSection } from "@/components/landing/FAQSection";
 import { Footer } from "@/components/landing/Footer";
+import { IslamicDivider } from "@/components/landing/IslamicDivider";
 import { connectDB } from "@/lib/mongodb";
 import { User } from "@/models/User";
 import { Class } from "@/models/Class";
@@ -32,7 +34,11 @@ export default async function HomePage() {
         <Hero />
         <StatsBar stats={stats} />
         <SubjectGrid />
+        <IslamicDivider />
+        <HadithBanner />
+        <IslamicDivider />
         <HowItWorks />
+        <IslamicDivider />
         <FAQSection />
       </main>
       <Footer />

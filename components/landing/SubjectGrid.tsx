@@ -21,18 +21,19 @@ export function SubjectGrid() {
   const t = useTranslations("subjects");
 
   return (
-    <section className="relative py-20 bg-[#f8f5f0] overflow-hidden">
-      <Image src="/banner-2.png" alt="" fill className="object-cover object-center -z-10" aria-hidden />
+    <section className="relative py-20 bg-[#f2ede8] overflow-hidden">
+      <Image src="/banner-2.png" alt="" fill className="object-fill -z-10" aria-hidden />
+      <Image src="/calligraphy-pattern-1.png" alt="" fill className="object-cover opacity-45 mix-blend-multiply -z-10" aria-hidden unoptimized />
       <div className="container mx-auto px-4">
         {/* Section header */}
-        <div className="text-end mb-2">
-          <h2 className="flex items-center justify-end gap-2 text-2xl font-bold text-[#2c1f12]">
+        <div className="text-start mb-2">
+          <h2 className="flex items-center justify-start gap-2 text-2xl font-bold text-[#2c1f12]">
             <span className="text-[#c8973a] text-xl">◁</span>
             {t("title")}
           </h2>
           <p className="text-[#78716c] mt-1.5 text-sm">{t("subtitle")}</p>
         </div>
-        <div className="flex justify-end mb-10">
+        <div className="flex justify-start mb-10">
           <Link href="/teachers" className="text-[#c8973a] text-sm font-medium hover:text-[#a67c2e] transition-colors">
             اكتشف المزيد ←
           </Link>

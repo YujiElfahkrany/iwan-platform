@@ -20,8 +20,8 @@ export function FAQSection() {
     <section className="py-20 bg-[#f2ede8]">
       <div className="container mx-auto px-4 max-w-3xl">
         {/* Section header */}
-        <div className="text-end mb-10">
-          <h2 className="flex items-center justify-end gap-2 text-2xl font-bold text-[#2c1f12]">
+        <div className="text-start mb-10">
+          <h2 className="flex items-center justify-start gap-2 text-2xl font-bold text-[#2c1f12]">
             <span className="text-[#c8973a] text-xl">◁</span>
             {t("title")}
           </h2>
@@ -34,7 +34,7 @@ export function FAQSection() {
               className="bg-white rounded-2xl shadow-sm border border-[#e5ddd4] overflow-hidden"
             >
               <button
-                className="w-full flex items-center justify-between px-6 py-4 text-end font-semibold text-[#2c1f12] hover:text-[#c8973a] hover:bg-[#faf8f5] transition-colors gap-4"
+                className="w-full flex items-center justify-between px-6 py-4 text-start font-semibold text-[#2c1f12] hover:text-[#c8973a] hover:bg-[#faf8f5] transition-colors gap-4"
                 onClick={() => setOpen(open === i ? null : i)}
               >
                 <ChevronDown
@@ -43,10 +43,10 @@ export function FAQSection() {
                     open === i && "rotate-180"
                   )}
                 />
-                <span className="flex-1 text-end">{item.q}</span>
+                <span className="flex-1 text-start">{item.q}</span>
               </button>
               {open === i && (
-                <div className="px-6 pb-5 text-[#78716c] text-sm leading-relaxed text-end border-t border-[#f0ebe3] pt-3">
+                <div className="px-6 pb-5 text-[#78716c] text-sm leading-relaxed text-start border-t border-[#f0ebe3] pt-3">
                   {item.a}
                 </div>
               )}
