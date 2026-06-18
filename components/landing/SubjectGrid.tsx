@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import {
@@ -22,12 +21,10 @@ export function SubjectGrid() {
 
   return (
     <section className="relative py-20 bg-[#f2ede8] overflow-hidden">
-      <Image src="/banner-2.png" alt="" fill className="object-fill -z-10" aria-hidden />
-      <Image src="/calligraphy-pattern-1.png" alt="" fill className="object-cover opacity-45 mix-blend-multiply -z-10" aria-hidden unoptimized />
-      <div className="container mx-auto px-4">
+<div className="relative z-10 container mx-auto px-4">
         {/* Section header */}
         <div className="text-start mb-2">
-          <h2 className="flex items-center justify-start gap-2 text-2xl font-bold text-[#2c1f12]">
+          <h2 className="flex items-center justify-start gap-2 text-4xl font-bold text-[#2c1f12]">
             <span className="text-[#c8973a] text-xl">◁</span>
             {t("title")}
           </h2>

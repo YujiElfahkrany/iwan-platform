@@ -11,11 +11,9 @@ export function Hero() {
 
   return (
     <section className="relative bg-[#f2ede8] overflow-hidden">
-      <Image src="/banner-1.png" alt="" fill className="object-fill -z-10" aria-hidden />
-      <Image src="/calligraphy-pattern.png" alt="" fill className="object-cover opacity-50 mix-blend-multiply -z-10" aria-hidden unoptimized />
-      <div className="absolute top-0 inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-[#c8973a] to-transparent" />
+<div className="absolute top-0 inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-[#c8973a] to-transparent z-10" />
 
-      <div className="container mx-auto px-4 py-16 md:py-24">
+      <div className="relative z-10 container mx-auto px-4 py-16 md:py-24">
         {/* dir="ltr" keeps image LEFT and text RIGHT in both AR and EN */}
         <div className="grid md:grid-cols-[2fr_3fr] gap-10 items-center" dir="ltr">
 

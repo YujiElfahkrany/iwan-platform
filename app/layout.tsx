@@ -10,8 +10,8 @@ const marhey = Marhey({
 });
 
 export const metadata: Metadata = {
-  title: "Iwan Academy | Learn from the Best",
-  description: "Book 1-on-1 sessions or join group classes with qualified teachers.",
+  title: "أكاديمية إيوان | تعلّم على يد أفضل المعلمين",
+  description: "احجز جلسات فردية أو انضم إلى فصول جماعية مع معلمين مؤهلين.",
   icons: { icon: "/logo.png" },
 };
 

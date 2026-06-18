@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { UserPlus, Search, Video } from "lucide-react";
 
@@ -29,9 +28,7 @@ export function HowItWorks() {
 
   return (
     <section className="relative py-20 bg-[#f2ede8] overflow-hidden">
-      <Image src="/banner-3.png" alt="" fill className="object-fill -z-10" aria-hidden />
-      <Image src="/calligraphy-pattern-2.png" alt="" fill className="object-cover opacity-45 mix-blend-multiply -z-10" aria-hidden unoptimized />
-      <div className="container mx-auto px-4 max-w-3xl">
+<div className="relative z-10 container mx-auto px-4 max-w-3xl">
         {/* Section header — Zad style */}
         <div className="text-start mb-2">
           <h2 className="flex items-center justify-start gap-2 text-2xl font-bold text-[#2c1f12]">

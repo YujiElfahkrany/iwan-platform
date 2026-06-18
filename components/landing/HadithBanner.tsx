@@ -12,7 +12,7 @@ export function HadithBanner() {
           alt="من يرد الله به خيراً يفقهه في الدين"
           width={900}
           height={164}
-          className="w-full max-w-2xl h-auto object-contain mix-blend-multiply"
+          className="w-full max-w-4xl h-auto object-contain mix-blend-multiply"
           unoptimized
         />
         <p className="text-[#2c1f12] font-bold text-base mt-4 tracking-wide">
