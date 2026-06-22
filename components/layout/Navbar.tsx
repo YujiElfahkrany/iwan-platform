@@ -84,7 +84,7 @@ export function Navbar() {
               <Link
                 key={l.href}
                 href={l.href}
-                className="px-3 py-1.5 text-[#2c1f12]/70 hover:text-[#c8973a] transition-colors rounded-md hover:bg-[#c8973a]/10"
+                className="px-3 py-1.5 text-[#2c1f12]/70 hover:text-[#c8973a] transition-colors rounded-md hover:bg-[#c8973a]/15"
               >
                 {l.label}
               </Link>
@@ -95,7 +95,7 @@ export function Navbar() {
           <div className="flex items-center gap-3">
             {/* Mobile hamburger */}
             <Sheet open={open} onOpenChange={setOpen}>
-              <SheetTrigger className="md:hidden p-2 rounded-lg text-[#2c1f12] hover:bg-[#c8973a]/10 transition-colors">
+              <SheetTrigger className="md:hidden p-2 rounded-lg text-[#2c1f12] hover:bg-[#c8973a]/15 transition-colors">
                 <Menu className="h-5 w-5" />
               </SheetTrigger>
               <SheetContent side={locale === "ar" ? "right" : "left"} className="bg-[#f2ede8] border-[#e5ddd4]">

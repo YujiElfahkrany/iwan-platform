@@ -48,48 +48,27 @@ export function Hero() {
             </p>
 
             {/* CTA buttons with illustrations */}
-            <div className="flex flex-wrap items-end gap-5">
-              <div className="flex flex-col items-center gap-2">
-                <Image
-                  src="/student-login.png"
-                  alt="الطالب"
-                  width={80}
-                  height={106}
-                  className="object-contain"
-                  unoptimized
-                />
-                <Button
-                  asChild
-                  size="lg"
-                  className="bg-gradient-to-b from-[#d4a843] to-[#a67c2e] hover:from-[#c8973a] hover:to-[#96712a] text-white h-11 px-8 rounded-lg font-bold shadow-md shadow-[#c8973a]/30 border-0"
-                >
-                  <Link href="/auth/register/student">
-                    <GraduationCap className="h-4 w-4 me-2" />
-                    {t("cta_student")}
-                  </Link>
-                </Button>
+            <div className="grid grid-cols-2 gap-8 w-fit">
+              {/* Images row — both same height box, images sit at bottom */}
+              <div className="flex items-end justify-center h-60">
+                <Image src="/student-login.png" alt="الطالب" width={180} height={240} className="object-contain" unoptimized />
               </div>
-              <div className="flex flex-col items-center gap-2">
-                <Image
-                  src="/teacher-login.png"
-                  alt="المعلم"
-                  width={80}
-                  height={106}
-                  className="object-contain"
-                  unoptimized
-                />
-                <Button
-                  asChild
-                  variant="outline"
-                  size="lg"
-                  className="h-11 px-7 rounded-lg border-[#c8973a] text-[#c8973a] hover:bg-[#c8973a]/8 hover:text-[#8a6420] font-semibold"
-                >
-                  <Link href="/auth/register/teacher">
-                    <BookOpen className="h-4 w-4 me-2" />
-                    {t("cta_teacher")}
-                  </Link>
-                </Button>
+              <div className="flex items-end justify-center h-60">
+                <Image src="/teacher-login.png" alt="المعلم" width={180} height={240} className="object-contain translate-y-[20px]" unoptimized />
               </div>
+              {/* Buttons row — perfectly aligned */}
+              <Button asChild size="lg" className="bg-gradient-to-b from-[#d4a843] to-[#a67c2e] hover:from-[#c8973a] hover:to-[#96712a] text-white h-16 px-12 rounded-xl text-lg font-bold shadow-md shadow-[#c8973a]/30 border-0">
+                <Link href="/auth/register/student">
+                  <GraduationCap className="h-6 w-6 me-2" />
+                  {t("cta_student")}
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="h-16 px-12 rounded-xl text-lg border-[#c8973a] text-[#c8973a] hover:bg-[#c8973a]/8 hover:text-[#8a6420] font-semibold">
+                <Link href="/auth/register/teacher">
+                  <BookOpen className="h-6 w-6 me-2" />
+                  {t("cta_teacher")}
+                </Link>
+              </Button>
             </div>
           </div>
 
