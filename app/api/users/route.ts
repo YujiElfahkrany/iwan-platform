@@ -8,7 +8,7 @@ import { StudentProfile } from "@/models/StudentProfile";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, email, password, role, profile } = body;
+    const { name, email, password, role, profile, image, phone } = body;
 
     if (!name || !email || !password || !role) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
 
     const passwordHash = await bcrypt.hash(password, 12);
     const initialBalance = role === "student" ? 1000 : 0;
-    const user = await User.create({ name, email, passwordHash, role, balance: initialBalance });
+    const user = await User.create({ name, email, passwordHash, role, balance: initialBalance, avatar: image, phone });
 
     if (role === "teacher") {
       await TeacherProfile.create({ userId: user._id, ...profile });

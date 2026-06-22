@@ -8,6 +8,7 @@ export interface IUser {
   role: "student" | "teacher" | "admin";
   balance: number;
   avatar?: string;
+  phone?: string;
   createdAt: Date;
 }
 
@@ -19,6 +20,7 @@ const UserSchema = new Schema<IUser>(
     role: { type: String, enum: ["student", "teacher", "admin"], required: true },
     balance: { type: Number, default: 0 },
     avatar: { type: String },
+    phone: { type: String },
   },
   { timestamps: true }
 );

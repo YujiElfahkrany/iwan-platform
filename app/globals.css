@@ -151,3 +151,33 @@
   background-position: center;
   background-repeat: no-repeat;
 }
+
+/* react-phone-number-input overrides */
+.phone-input {
+  padding: 0;
+  gap: 0;
+}
+.phone-input .PhoneInputCountry {
+  padding: 0 8px;
+  border-right: 1px solid hsl(var(--border));
+  margin-right: 0;
+}
+.phone-input .PhoneInputCountrySelect {
+  background: transparent;
+  font-size: 0.875rem;
+  color: hsl(var(--foreground));
+  outline: none;
+  cursor: pointer;
+}
+.phone-input .PhoneInputInput {
+  flex: 1;
+  padding: 0 12px;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 0.875rem;
+  color: hsl(var(--foreground));
+}
+.phone-input .PhoneInputInput::placeholder {
+  color: hsl(var(--muted-foreground));
+}
