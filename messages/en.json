@@ -52,7 +52,18 @@
     "step2_title": "Find Your Teacher",
     "step2_desc": "Browse qualified teachers by subject, availability, and price.",
     "step3_title": "Start Learning",
-    "step3_desc": "Book a session or join a class and learn live."
+    "step3_desc": "Book a session or join a class and learn live.",
+    "discover_more": "Discover more",
+    "show_less": "Show less",
+    "step1_detail1": "Choose your role — student or teacher — and fill in your profile in under two minutes.",
+    "step1_detail2": "Students set their subjects and learning level; teachers add qualifications and hourly rates.",
+    "step1_detail3": "Your profile is your starting point — keep it up to date to get the best matches.",
+    "step2_detail1": "Filter teachers by subject, price range, rating, and available time slots.",
+    "step2_detail2": "Read verified reviews from other students before booking.",
+    "step2_detail3": "Browse open group classes for a more affordable learning option.",
+    "step3_detail1": "Pay securely with your balance and get instant confirmation.",
+    "step3_detail2": "Join the live video session directly in your browser — no downloads needed.",
+    "step3_detail3": "Submit assignments, track your progress, and view marks all in one place."
   },
   "faq": {
     "title": "Frequently Asked Questions",
@@ -353,7 +364,10 @@
     "worth": "{n} marks",
     "upload_btn": "Upload",
     "resubmit_btn": "Resubmit",
+    "status_approved": "Approved",
     "status_pending": "Under review",
+    "status_rejected": "Rejected",
+    "not_submitted": "Not submitted",
     "submitted_toast": "Assignment submitted successfully",
     "submit_error": "Failed to submit assignment"
   },

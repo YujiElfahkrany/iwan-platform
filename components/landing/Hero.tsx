@@ -21,27 +21,27 @@ export function Hero() {
 
       <div className="relative z-10 container mx-auto px-4 py-16 md:py-24">
         {/* dir="ltr" keeps image LEFT and text RIGHT in both AR and EN */}
-        <div className="grid md:grid-cols-[2fr_3fr] gap-10 items-center" dir="ltr">
+        <div className="grid md:grid-cols-[2fr_3fr] gap-4 items-center" dir="ltr">
 
           {/* Visual side — always left */}
-          <div className="flex justify-center">
+          <div className="flex justify-center md:-my-16 md:-ms-8">
             <Image
               src="/hero-without-words.png"
               alt="إيوان"
-              width={560}
-              height={624}
-              className="w-full h-auto object-contain drop-shadow-xl"
+              width={480}
+              height={540}
+              className="w-full h-auto object-contain"
               unoptimized
               priority
             />
           </div>
 
           {/* Text side — always right; dir="rtl" restores Arabic alignment inside the ltr grid */}
-          <div className="text-start" dir="rtl">
-            <h1 className="text-6xl md:text-7xl font-bold text-[#2c1f12] leading-tight mb-5">
+          <div className="text-start pt-6 md:pt-0" dir="rtl">
+            <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold text-[#2c1f12] leading-tight mb-5">
               {t("title")}
             </h1>
-            <p className="text-[#6b5c4c] leading-relaxed mb-6 text-lg">
+            <p className="text-[#6b5c4c] leading-relaxed mb-6 text-base sm:text-lg">
               {t("subtitle")}
             </p>
 
