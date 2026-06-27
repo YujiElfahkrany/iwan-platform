@@ -13,6 +13,7 @@ export interface ITeacherProfile {
   timezone: string;
   rating: number;
   totalReviews: number;
+  credentialImage?: string;
 }
 
 const TeacherProfileSchema = new Schema<ITeacherProfile>(
@@ -28,6 +29,7 @@ const TeacherProfileSchema = new Schema<ITeacherProfile>(
     timezone: { type: String, default: "UTC" },
     rating: { type: Number, default: 0 },
     totalReviews: { type: Number, default: 0 },
+    credentialImage: { type: String },
   },
   { timestamps: true }
 );

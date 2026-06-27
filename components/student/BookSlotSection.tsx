@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +29,7 @@ interface BookSlotSectionProps {
 export function BookSlotSection({ slots, teacherId }: BookSlotSectionProps) {
   const { data: session } = useSession();
   const router = useRouter();
+  const t = useTranslations("teacher_profile");
   const [bookingId, setBookingId] = useState<string | null>(null);
 
   async function handleBook(slot: Slot) {
@@ -50,7 +52,7 @@ export function BookSlotSection({ slots, teacherId }: BookSlotSectionProps) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Booking failed");
-      toast.success(`Session booked! ${slot.price} LE deducted from your balance.`);
+      toast.success(`${slot.price} LE deducted from your balance.`);
       router.push("/dashboard/student/bookings");
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Booking failed");
@@ -64,12 +66,12 @@ export function BookSlotSection({ slots, teacherId }: BookSlotSectionProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <CalendarDays className="h-5 w-5 text-primary" />
-          Available Slots
+          {t("available_slots")}
         </CardTitle>
       </CardHeader>
       <CardContent>
         {slots.length === 0 ? (
-          <p className="text-muted-foreground text-sm text-center py-6">No slots available right now. Check back later.</p>
+          <p className="text-muted-foreground text-sm text-center py-6">{t("no_slots_available")}</p>
         ) : (
           <div className="space-y-3">
             {slots.map((slot) => (
@@ -89,7 +91,7 @@ export function BookSlotSection({ slots, teacherId }: BookSlotSectionProps) {
                     disabled={bookingId === slot._id}
                   >
                     {bookingId === slot._id && <Loader2 className="h-3.5 w-3.5 animate-spin me-1.5" />}
-                    Book with Credits
+                    {t("book_session")}
                   </Button>
                 </div>
               </div>

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import mongoose from "mongoose";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/mongodb";
 import { Booking } from "@/models/Booking";
@@ -56,7 +57,7 @@ export async function POST(req: NextRequest) {
 
     if (type === "class" && classId) {
       const cls = await Class.findById(classId);
-      if (!cls || cls.status === "full") {
+      if (!cls || cls.enrolledStudents.length >= cls.maxStudents) {
         return NextResponse.json({ error: "Class is full" }, { status: 400 });
       }
       meetingRoomName = cls.meetingRoomName;
@@ -80,10 +81,15 @@ export async function POST(req: NextRequest) {
       }
 
       if (type === "class" && classId) {
-        await Class.findByIdAndUpdate(classId, {
-          $addToSet: { enrolledStudents: session.user.id },
-          $set: { status: "full" },
-        });
+        const studentObjId = new mongoose.Types.ObjectId(session.user.id);
+        const updatedClass = await Class.findByIdAndUpdate(
+          classId,
+          { $addToSet: { enrolledStudents: studentObjId } },
+          { new: true }
+        );
+        if (updatedClass && updatedClass.enrolledStudents.length >= updatedClass.maxStudents) {
+          await Class.findByIdAndUpdate(classId, { $set: { status: "full" } });
+        }
       }
 
       const booking = await Booking.create({

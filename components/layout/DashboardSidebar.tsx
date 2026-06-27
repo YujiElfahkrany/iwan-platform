@@ -17,9 +17,12 @@ import {
   Menu,
   X,
   Home,
+  ClipboardList,
+  TrendingUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { TopUpDialog } from "@/components/student/TopUpDialog";
 
 interface NavItem {
   href: string;
@@ -30,22 +33,26 @@ interface NavItem {
 interface DashboardSidebarProps {
   role: "teacher" | "student" | "admin";
   userName: string;
+  balance?: number;
 }
 
 function SidebarContent({
   links,
   userName,
   roleLabel,
+  balance,
   onLinkClick,
 }: {
   links: NavItem[];
   userName: string;
   roleLabel: string;
+  balance?: number;
   onLinkClick?: () => void;
 }) {
   const pathname = usePathname();
   const locale = useLocale();
   const tNav = useTranslations("nav");
+  const td = useTranslations("dashboard");
   const role = links[0]?.href.split("/")[2] as string;
 
   return (
@@ -77,6 +84,17 @@ function SidebarContent({
           );
         })}
       </nav>
+      {balance !== undefined && (
+        <div className="px-4 py-3 border-t border-sidebar-border">
+          <div className="bg-[#c8973a]/10 border border-[#c8973a]/25 rounded-xl p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Wallet className="h-3.5 w-3.5 text-[#c8973a]" />
+              <span className="text-xs text-sidebar-foreground/60">{td("my_balance")}</span>
+            </div>
+            <TopUpDialog balance={balance} />
+          </div>
+        </div>
+      )}
       <div className="p-4 border-t border-sidebar-border space-y-1">
         <Link
           href="/"
@@ -99,7 +117,7 @@ function SidebarContent({
   );
 }
 
-export function DashboardSidebar({ role, userName }: DashboardSidebarProps) {
+export function DashboardSidebar({ role, userName, balance }: DashboardSidebarProps) {
   const t = useTranslations("dashboard");
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -107,6 +125,7 @@ export function DashboardSidebar({ role, userName }: DashboardSidebarProps) {
     { href: `/dashboard/teacher`, label: t("upcoming"), icon: <LayoutDashboard className="h-4 w-4" /> },
     { href: `/dashboard/teacher/availability`, label: t("availability"), icon: <CalendarDays className="h-4 w-4" /> },
     { href: `/dashboard/teacher/classes`, label: t("my_classes"), icon: <BookOpen className="h-4 w-4" /> },
+    { href: `/dashboard/teacher/assignments`, label: t("assignments"), icon: <ClipboardList className="h-4 w-4" /> },
     { href: `/dashboard/teacher/bookings`, label: t("my_bookings"), icon: <Star className="h-4 w-4" /> },
   ];
 
@@ -114,6 +133,7 @@ export function DashboardSidebar({ role, userName }: DashboardSidebarProps) {
     { href: `/dashboard/student`, label: t("upcoming"), icon: <LayoutDashboard className="h-4 w-4" /> },
     { href: `/dashboard/student/teachers`, label: t("browse_teachers"), icon: <Users className="h-4 w-4" /> },
     { href: `/dashboard/student/classes`, label: t("browse_classes"), icon: <GraduationCap className="h-4 w-4" /> },
+    { href: `/dashboard/student/progress`, label: t("my_progress"), icon: <TrendingUp className="h-4 w-4" /> },
     { href: `/dashboard/student/bookings`, label: t("my_bookings"), icon: <BookOpen className="h-4 w-4" /> },
   ];
 
@@ -133,7 +153,7 @@ export function DashboardSidebar({ role, userName }: DashboardSidebarProps) {
     <>
       {/* Desktop sidebar */}
       <aside className="hidden md:flex w-64 min-h-screen bg-[#2c1f12]/75 text-sidebar-foreground flex-col shrink-0">
-        <SidebarContent links={links} userName={userName} roleLabel={roleLabel} />
+        <SidebarContent links={links} userName={userName} roleLabel={roleLabel} balance={balance} />
       </aside>
 
       {/* Mobile hamburger button */}
@@ -166,6 +186,7 @@ export function DashboardSidebar({ role, userName }: DashboardSidebarProps) {
               links={links}
               userName={userName}
               roleLabel={roleLabel}
+              balance={balance}
               onLinkClick={() => setMobileOpen(false)}
             />
           </aside>

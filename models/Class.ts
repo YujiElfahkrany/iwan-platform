@@ -1,5 +1,12 @@
 import mongoose, { Schema, model, models } from "mongoose";
 
+export interface ICurriculumItem {
+  sessionNumber: number;
+  assignmentTitle: string;
+  description: string;
+  maxMarks: number;
+}
+
 export interface IClass {
   _id: mongoose.Types.ObjectId;
   teacherId: mongoose.Types.ObjectId;
@@ -13,7 +20,19 @@ export interface IClass {
   enrolledStudents: mongoose.Types.ObjectId[];
   meetingRoomName: string;
   status: "open" | "full" | "completed" | "cancelled";
+  totalSessions: number;
+  curriculum: ICurriculumItem[];
 }
+
+const CurriculumItemSchema = new Schema<ICurriculumItem>(
+  {
+    sessionNumber: { type: Number, required: true },
+    assignmentTitle: { type: String, required: true },
+    description: { type: String, default: "" },
+    maxMarks: { type: Number, required: true },
+  },
+  { _id: false }
+);
 
 const ClassSchema = new Schema<IClass>(
   {
@@ -28,6 +47,8 @@ const ClassSchema = new Schema<IClass>(
     enrolledStudents: [{ type: Schema.Types.ObjectId, ref: "User" }],
     meetingRoomName: { type: String, required: true },
     status: { type: String, enum: ["open", "full", "completed", "cancelled"], default: "open" },
+    totalSessions: { type: Number, default: 1 },
+    curriculum: { type: [CurriculumItemSchema], default: [] },
   },
   { timestamps: true }
 );
@@ -35,4 +56,7 @@ const ClassSchema = new Schema<IClass>(
 ClassSchema.index({ teacherId: 1, startTime: 1 });
 ClassSchema.index({ subject: 1, startTime: 1 });
 
+if (process.env.NODE_ENV !== "production" && models.Class) {
+  delete (models as Record<string, unknown>).Class;
+}
 export const Class = models.Class ?? model<IClass>("Class", ClassSchema);

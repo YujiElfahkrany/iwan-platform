@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import mongoose from "mongoose";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/mongodb";
 import { Class } from "@/models/Class";
@@ -10,9 +11,29 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const teacherId = searchParams.get("teacherId");
     const subject = searchParams.get("subject");
+    const enrolled = searchParams.get("enrolled");
     const filter: Record<string, unknown> = {};
     if (teacherId) filter.teacherId = teacherId;
     if (subject) filter.subject = subject;
+
+    if (enrolled === "true") {
+      const session = await auth();
+      if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      const studentObjId = new mongoose.Types.ObjectId(session.user.id);
+      filter.enrolledStudents = studentObjId;
+      console.log("[classes/enrolled] user:", session.user.id, "filter:", JSON.stringify(filter));
+      const classes = await Class.find(filter).sort({ startTime: 1 }).lean();
+      console.log("[classes/enrolled] found:", classes.length, "classes");
+      return NextResponse.json(
+        classes.map((c) => ({
+          ...c,
+          _id: c._id.toString(),
+          teacherId: c.teacherId.toString(),
+          enrolledStudents: c.enrolledStudents.map((id: { toString: () => string }) => id.toString()),
+        }))
+      );
+    }
+
     const classes = await Class.find({ ...filter, startTime: { $gte: new Date() } })
       .sort({ startTime: 1 })
       .lean();

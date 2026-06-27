@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,15 +21,11 @@ interface Slot {
 }
 
 export default function AvailabilityPage() {
+  const t = useTranslations("teacher");
   const [slots, setSlots] = useState<Slot[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({
-    date: "",
-    startTime: "",
-    durationMinutes: 60,
-    price: 20,
-  });
+  const [form, setForm] = useState({ date: "", startTime: "", durationMinutes: 60, price: 20 });
 
   const fetchSlots = useCallback(async () => {
     setLoading(true);
@@ -56,12 +53,12 @@ export default function AvailabilityPage() {
           price: form.price,
         }),
       });
-      if (!res.ok) throw new Error("Failed to add slot");
-      toast.success("Slot added");
+      if (!res.ok) throw new Error();
+      toast.success(t("slot_added"));
       setForm({ date: "", startTime: "", durationMinutes: 60, price: 20 });
       fetchSlots();
     } catch {
-      toast.error("Failed to add slot");
+      toast.error(t("failed_slot"));
     } finally {
       setSaving(false);
     }
@@ -69,7 +66,7 @@ export default function AvailabilityPage() {
 
   async function deleteSlot(id: string) {
     await fetch(`/api/slots?id=${id}`, { method: "DELETE" });
-    toast.success("Slot removed");
+    toast.success(t("slot_removed"));
     fetchSlots();
   }
 
@@ -77,46 +74,44 @@ export default function AvailabilityPage() {
     <div className="space-y-6 max-w-3xl">
       <h1 className="text-2xl font-bold flex items-center gap-2">
         <CalendarDays className="h-6 w-6 text-primary" />
-        Manage Availability
+        {t("availability_title")}
       </h1>
 
-      {/* Add slot form */}
       <Card>
-        <CardHeader><CardTitle className="text-base">Add a New Time Slot</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">{t("add_slot")}</CardTitle></CardHeader>
         <CardContent>
           <form onSubmit={addSlot} className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="space-y-1">
-              <Label>Date</Label>
+              <Label>{t("date")}</Label>
               <Input type="date" required value={form.date} onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))} min={new Date().toISOString().split("T")[0]} />
             </div>
             <div className="space-y-1">
-              <Label>Start Time</Label>
+              <Label>{t("start_time")}</Label>
               <Input type="time" required value={form.startTime} onChange={(e) => setForm((f) => ({ ...f, startTime: e.target.value }))} />
             </div>
             <div className="space-y-1">
-              <Label>Duration (min)</Label>
+              <Label>{t("duration")}</Label>
               <Input type="number" min={15} step={15} value={form.durationMinutes} onChange={(e) => setForm((f) => ({ ...f, durationMinutes: parseInt(e.target.value) }))} />
             </div>
             <div className="space-y-1">
-              <Label>Price (USD)</Label>
+              <Label>{t("price_usd")}</Label>
               <Input type="number" min={1} value={form.price} onChange={(e) => setForm((f) => ({ ...f, price: parseFloat(e.target.value) }))} />
             </div>
             <Button type="submit" disabled={saving} className="col-span-2 md:col-span-4">
               {saving ? <Loader2 className="h-4 w-4 animate-spin me-2" /> : <Plus className="h-4 w-4 me-2" />}
-              Add Slot
+              {t("add_slot_btn")}
             </Button>
           </form>
         </CardContent>
       </Card>
 
-      {/* Slots list */}
       <Card>
-        <CardHeader><CardTitle className="text-base">Your Upcoming Slots</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">{t("upcoming_slots")}</CardTitle></CardHeader>
         <CardContent>
           {loading ? (
             <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
           ) : slots.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">No slots yet. Add one above.</p>
+            <p className="text-center text-muted-foreground py-8">{t("no_slots")}</p>
           ) : (
             <div className="space-y-2">
               {slots.map((slot) => (

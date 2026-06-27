@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +29,8 @@ interface ClassItem {
 export default function BrowseClassesPage() {
   const { data: session } = useSession();
   const router = useRouter();
+  const t = useTranslations("class_card");
+  const td = useTranslations("dashboard");
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [enrollingId, setEnrollingId] = useState<string | null>(null);
@@ -60,7 +63,7 @@ export default function BrowseClassesPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Enrollment failed");
-      toast.success(`Enrolled in "${cls.title}"! ${cls.price} LE deducted from your balance.`);
+      toast.success(`${cls.price} LE deducted from your balance.`);
       router.push("/dashboard/student/bookings");
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Enrollment failed");
@@ -77,16 +80,16 @@ export default function BrowseClassesPage() {
 
   return (
     <div className="space-y-6 max-w-5xl">
-      <h1 className="text-2xl font-bold">Browse Group Classes</h1>
+      <h1 className="text-2xl font-bold">{td("browse_classes")}</h1>
       <div className="relative">
         <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input className="ps-9" placeholder="Search classes..." value={search} onChange={(e) => setSearch(e.target.value)} />
+        <Input className="ps-9" placeholder={`${td("browse_classes")}...`} value={search} onChange={(e) => setSearch(e.target.value)} />
       </div>
 
       {loading ? (
         <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
       ) : filtered.length === 0 ? (
-        <Card><CardContent className="py-12 text-center text-muted-foreground">No classes available right now.</CardContent></Card>
+        <Card><CardContent className="py-12 text-center text-muted-foreground">{t("full")}</CardContent></Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {filtered.map((cls) => {
@@ -108,7 +111,7 @@ export default function BrowseClassesPage() {
                   {cls.description && <p className="text-sm text-muted-foreground line-clamp-2">{cls.description}</p>}
                   <div className="text-xs text-muted-foreground space-y-1">
                     <p className="flex items-center gap-2"><Clock className="h-3.5 w-3.5" />{format(new Date(cls.startTime), "PPp")} – {format(new Date(cls.endTime), "HH:mm")}</p>
-                    <p className="flex items-center gap-2"><Users className="h-3.5 w-3.5" />{isFull ? "Class full" : `${spotsLeft} spot${spotsLeft !== 1 ? "s" : ""} left`}</p>
+                    <p className="flex items-center gap-2"><Users className="h-3.5 w-3.5" />{isFull ? t("full") : t("spots_left", { n: spotsLeft })}</p>
                   </div>
                   <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                     <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${(cls.enrolledStudents.length / cls.maxStudents) * 100}%` }} />
@@ -120,7 +123,7 @@ export default function BrowseClassesPage() {
                     onClick={() => enroll(cls)}
                   >
                     {enrollingId === cls._id && <Loader2 className="h-3.5 w-3.5 animate-spin me-1.5" />}
-                    {isEnrolled ? "Already Enrolled" : isFull ? "Class Full" : "Enroll with Credits"}
+                    {isEnrolled ? td("enrolled_classes") : isFull ? t("full") : t("enroll")}
                   </Button>
                 </CardContent>
               </Card>
