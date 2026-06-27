@@ -19,7 +19,7 @@ export function StatsBar({ stats }: { stats: Stats }) {
   ];
 
   return (
-    <section className="bg-[#f2ede8] pb-8">
+    <section className="bg-transparent pb-8">
       <div className="container mx-auto px-4">
         {/* White floating card — matches Zad Academy stats bar */}
         <div className="bg-white rounded-2xl shadow-md px-6 py-5 flex flex-wrap items-center justify-between gap-6">

@@ -22,21 +22,25 @@ import type { E164Number } from "libphonenumber-js/core";
 const TIMEZONES = ["UTC", "America/New_York", "America/Los_Angeles", "Europe/London", "Europe/Paris", "Asia/Dubai", "Asia/Riyadh", "Asia/Cairo", "Asia/Karachi"];
 const LANGUAGES = ["English", "Arabic", "French", "Spanish", "Urdu"];
 
-const SKIN_TONE_BASES_MALE = ["man-kufi", "man-keffiyeh", "man-keffiyeh-blonde", "man-casual", "man-thobe", "man-keffiyeh-grey", "man-keffiyeh-gold", "man-thobe-white"];
 const SKIN_TONE_BASES_FEMALE = ["woman-hijab-blue", "woman-hijab-red", "woman-hijab-green", "woman-hijab-yellow", "woman-niqab-grey", "woman-niqab-blue"];
 
 const AVATARS: { name: string; url: string; gender: "male" | "female" }[] = [
   ...["man-kufi", "man-keffiyeh", "man-keffiyeh-blonde", "man-casual",
       "man-thobe", "man-keffiyeh-grey", "man-keffiyeh-gold", "man-thobe-white",
-      "man-beard-dark", "man-apron", "man-kufi-chef", "man-glasses-elder", "man-beret",
+      "man-beard-dark", "man-glasses-elder",
   ].map((name) => ({ name, url: `/avatars/${name}.png`, gender: "male" as const })),
-  ...SKIN_TONE_BASES_MALE.flatMap((name) =>
-    (["light", "medium", "dark"] as const).map((tone) => ({
-      name: `${name}-${tone}`, url: `/avatars/${name}-${tone}.png`, gender: "male" as const,
-    }))
-  ),
+  ...[
+    "man-kufi-light", "man-kufi-medium",
+    "man-keffiyeh-light", "man-keffiyeh-medium", "man-keffiyeh-dark",
+    "man-keffiyeh-blonde-light", "man-keffiyeh-blonde-medium", "man-keffiyeh-blonde-dark",
+    "man-casual-light", "man-casual-medium", "man-casual-dark",
+    "man-thobe-light",
+    "man-keffiyeh-grey-light", "man-keffiyeh-grey-medium",
+    "man-keffiyeh-gold-light", "man-keffiyeh-gold-dark",
+    "man-thobe-white-medium",
+  ].map((name) => ({ name, url: `/avatars/${name}.png`, gender: "male" as const })),
   ...["woman-hijab-blue", "woman-hijab-dark", "woman-hijab-red", "woman-hijab-green",
-      "woman-hijab-yellow", "woman-hijab-white", "woman-niqab-grey", "woman-niqab-blue",
+      "woman-hijab-yellow", "woman-niqab-grey", "woman-niqab-blue",
       "woman-niqab-black", "woman-casual-red", "woman-dark-skin", "woman-glasses",
   ].map((name) => ({ name, url: `/avatars/${name}.png`, gender: "female" as const })),
   ...SKIN_TONE_BASES_FEMALE.flatMap((name) =>
@@ -160,7 +164,7 @@ export default function StudentRegisterPage() {
   const stepTitles = [t("step1_title"), t("step2_title"), t("step3_title")];
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f2ede8] watermark-pattern px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center px-4 py-12">
       <Card className="w-full max-w-lg shadow-2xl">
         <CardHeader>
           <Link href="/" className="flex items-center gap-1.5 mb-2 w-fit text-[#2c1f12]/60 hover:text-[#c8973a] transition-colors text-sm">

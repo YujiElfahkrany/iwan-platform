@@ -31,15 +31,17 @@ export default async function HomePage() {
     <div className="flex flex-col min-h-screen">
       <Navbar />
       <main className="flex-1">
-        <Hero />
-        <StatsBar stats={stats} />
-        <SubjectGrid />
-        <IslamicDivider />
-        <HadithBanner />
-        <IslamicDivider />
-        <HowItWorks />
-        <IslamicDivider />
-        <FAQSection />
+        <div className="mx-auto w-[90%] bg-[#f2ede8]/90 shadow-[0_0_60px_rgba(0,0,0,0.18)]">
+          <Hero />
+          <StatsBar stats={stats} />
+          <SubjectGrid />
+          <IslamicDivider />
+          <HadithBanner />
+          <IslamicDivider />
+          <HowItWorks />
+          <IslamicDivider />
+          <FAQSection />
+        </div>
       </main>
       <Footer />
     </div>

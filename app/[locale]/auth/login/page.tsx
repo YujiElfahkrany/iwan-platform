@@ -1,21 +1,31 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { signIn } from "next-auth/react";
-import { useRouter } from "@/i18n/navigation";
-import { Link } from "@/i18n/navigation";
+import { useRouter, Link } from "@/i18n/navigation";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { BookOpen, Loader2 } from "lucide-react";
+import { BookOpen, Loader2, ChevronLeft } from "lucide-react";
+import Image from "next/image";
 import { toast } from "sonner";
 
 export default function LoginPage() {
   const t = useTranslations("auth");
+  const tNav = useTranslations("nav");
   const router = useRouter();
+  const locale = useLocale();
+  const searchParams = useSearchParams();
+  const role = searchParams.get("role");
   const [loading, setLoading] = useState(false);
+
+  const registerHref =
+    role === "student" ? "/auth/register/student" :
+    role === "teacher" ? "/auth/register/teacher" :
+    "/auth/register";
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -30,13 +40,12 @@ export default function LoginPage() {
     if (result?.error) {
       toast.error("Invalid email or password");
     } else {
-      // Fetch session to determine role-based redirect
       const res = await fetch("/api/auth/session");
       const session = await res.json();
-      const role = session?.user?.role;
-      if (role === "admin") {
+      const userRole = session?.user?.role;
+      if (userRole === "admin") {
         router.push("/dashboard/admin");
-      } else if (role === "teacher") {
+      } else if (userRole === "teacher") {
         router.push("/dashboard/teacher");
       } else {
         router.push("/dashboard/student");
@@ -45,15 +54,17 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f2ede8] watermark-pattern px-4">
+    <div className="min-h-screen flex items-center justify-center px-4">
       <Card className="w-full max-w-md shadow-2xl">
         <CardHeader className="text-center pb-2">
-          <div className="flex justify-center mb-4">
-            <div className="p-3 rounded-full bg-primary/10">
-              <BookOpen className="h-8 w-8 text-primary" />
-            </div>
+          <Link href="/" className="flex items-center gap-1 mb-1 w-fit text-[#2c1f12]/50 hover:text-[#c8973a] transition-colors text-xs">
+            <ChevronLeft className={`h-3 w-3 ${locale === "ar" ? "rotate-180" : ""}`} />
+            {tNav("home")}
+          </Link>
+          <div className="flex justify-center mb-2">
+            <Image src="/logo.png" alt="Iwan Academy" width={72} height={72} unoptimized />
           </div>
-          <CardTitle className="text-2xl">Iwan Academy</CardTitle>
+          <CardTitle className="text-2xl">{locale === "ar" ? "أكاديمية إيوان" : "Iwan Academy"}</CardTitle>
           <CardDescription>{t("login")}</CardDescription>
         </CardHeader>
         <CardContent>
@@ -73,7 +84,7 @@ export default function LoginPage() {
           </form>
           <p className="text-center text-sm text-muted-foreground mt-4">
             {t("no_account")}{" "}
-            <Link href="/auth/register" className="text-primary hover:underline font-medium">
+            <Link href={registerHref} className="text-primary hover:underline font-medium">
               {t("register")}
             </Link>
           </p>

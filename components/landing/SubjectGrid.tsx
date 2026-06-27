@@ -20,7 +20,7 @@ export function SubjectGrid() {
   const t = useTranslations("subjects");
 
   return (
-    <section className="relative py-20 bg-[#f2ede8] overflow-hidden">
+    <section className="relative py-20 bg-transparent overflow-hidden">
 <div className="relative z-10 container mx-auto px-4">
         {/* Section header */}
         <div className="text-start mb-2">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, Plus } from "lucide-react";
@@ -14,13 +15,14 @@ interface AddBalanceFormProps {
 }
 
 export function AddBalanceForm({ userId, userName, currentBalance, onSuccess }: AddBalanceFormProps) {
+  const t = useTranslations("admin");
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const n = Number(amount);
-    if (!n || n <= 0) { toast.error("Enter a valid amount"); return; }
+    if (!n || n <= 0) { toast.error(t("invalid_amount")); return; }
     setLoading(true);
     try {
       const res = await fetch("/api/admin/balance", {
@@ -30,11 +32,11 @@ export function AddBalanceForm({ userId, userName, currentBalance, onSuccess }: 
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed");
-      toast.success(`Added ${n} LE to ${userName}'s account`);
+      toast.success(t("added_toast", { n, name: userName }));
       onSuccess(data.balance);
       setAmount("");
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Failed to add balance");
+      toast.error(err instanceof Error ? err.message : "Failed");
     } finally {
       setLoading(false);
     }
@@ -46,14 +48,14 @@ export function AddBalanceForm({ userId, userName, currentBalance, onSuccess }: 
       <Input
         type="number"
         min="1"
-        placeholder="Amount"
+        placeholder={t("amount_placeholder")}
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
         className="w-24 h-8 text-sm"
       />
       <Button type="submit" size="sm" className="h-8" disabled={loading}>
         {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
-        Add LE
+        {t("add_btn")}
       </Button>
     </form>
   );

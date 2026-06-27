@@ -27,7 +27,7 @@ export function HowItWorks() {
   const t = useTranslations("howItWorks");
 
   return (
-    <section className="relative py-20 bg-[#f2ede8] overflow-hidden">
+    <section className="relative py-20 bg-transparent overflow-hidden">
 <div className="relative z-10 container mx-auto px-4 max-w-3xl">
         {/* Section header — Zad style */}
         <div className="text-start mb-2">

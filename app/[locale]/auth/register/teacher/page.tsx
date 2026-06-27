@@ -96,7 +96,7 @@ export default function TeacherRegisterPage() {
   const stepTitles = [t("step1_title"), t("step2_title"), t("step3_title")];
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f2ede8] watermark-pattern px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center px-4 py-12">
       <Card className="w-full max-w-lg shadow-2xl">
         <CardHeader>
           <CardTitle className="text-xl">{ta("teacher")}</CardTitle>

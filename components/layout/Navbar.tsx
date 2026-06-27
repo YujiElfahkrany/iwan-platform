@@ -35,7 +35,7 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full">
-      <nav className="h-20 bg-[#f2ede8] border-b border-[#c8973a]/40 shadow-sm flex items-center">
+      <nav className="h-20 bg-[#f2ede8]/95 border-b border-[#c8973a]/40 shadow-sm flex items-center">
         {/* dir="ltr" pins visual order: portals LEFT, logo RIGHT in both AR and EN */}
         <div className="w-full px-6 flex items-center justify-between gap-4" dir="ltr">
 
@@ -52,14 +52,14 @@ export function Navbar() {
             ) : (
               <>
                 <Link
-                  href="/auth/register/student"
+                  href="/auth/login?role=student"
                   className="hidden sm:flex items-center gap-2 text-[#2c1f12]/70 hover:text-[#c8973a] transition-colors font-medium border-r border-[#c8973a]/30 pr-4"
                 >
                   <Image src="/student-login.png" alt="الطالب" width={34} height={44} className="object-contain" unoptimized />
                   {locale === "ar" ? "بوابة الطلاب" : "Student Portal"}
                 </Link>
                 <Link
-                  href="/auth/register/teacher"
+                  href="/auth/login?role=teacher"
                   className="hidden sm:flex items-center gap-2 text-[#2c1f12]/70 hover:text-[#c8973a] transition-colors font-medium border-r border-[#c8973a]/30 pr-4"
                 >
                   <Image src="/teacher-login.png" alt="المعلم" width={34} height={44} className="object-contain" unoptimized />
@@ -122,11 +122,11 @@ export function Navbar() {
                     </>
                   ) : (
                     <>
-                      <Link href="/auth/register/student" className="flex items-center gap-2 text-lg font-medium text-[#2c1f12]/70 hover:text-[#c8973a]" onClick={() => setOpen(false)}>
+                      <Link href="/auth/login?role=student" className="flex items-center gap-2 text-lg font-medium text-[#2c1f12]/70 hover:text-[#c8973a]" onClick={() => setOpen(false)}>
                         <Image src="/student-login.png" alt="" width={24} height={30} className="object-contain" unoptimized />
                         {locale === "ar" ? "بوابة الطلاب" : "Student Portal"}
                       </Link>
-                      <Link href="/auth/register/teacher" className="flex items-center gap-2 text-lg font-medium text-[#2c1f12]/70 hover:text-[#c8973a]" onClick={() => setOpen(false)}>
+                      <Link href="/auth/login?role=teacher" className="flex items-center gap-2 text-lg font-medium text-[#2c1f12]/70 hover:text-[#c8973a]" onClick={() => setOpen(false)}>
                         <Image src="/teacher-login.png" alt="" width={24} height={30} className="object-contain" unoptimized />
                         {locale === "ar" ? "بوابة المعلمين" : "Teacher Portal"}
                       </Link>

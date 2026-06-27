@@ -15,9 +15,9 @@ export default async function StudentDashboardLayout({
   if (session.user.role !== "student") redirect(`/${locale}/dashboard/teacher`);
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-site-3">
       <DashboardSidebar role="student" userName={session.user.name ?? ""} />
-      <main className="flex-1 bg-muted/30 p-6 overflow-auto">{children}</main>
+      <main className="flex-1 bg-[#f2ede8]/80 p-6 pt-16 md:pt-6 overflow-auto">{children}</main>
     </div>
   );
 }

@@ -4,10 +4,13 @@ import { User } from "@/models/User";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StudentsBalanceTable } from "@/components/admin/StudentsBalanceTable";
+import { getTranslations } from "next-intl/server";
 
 export default async function AdminStudentsPage() {
   const session = await auth();
   if (!session?.user || session.user.role !== "admin") return null;
+
+  const t = await getTranslations("admin");
 
   await connectDB();
   const students = await User.find({ role: "student" })
@@ -26,12 +29,12 @@ export default async function AdminStudentsPage() {
   return (
     <div className="space-y-6 max-w-5xl">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Students</h1>
-        <Badge variant="secondary">{data.length} total</Badge>
+        <h1 className="text-2xl font-bold">{t("students")}</h1>
+        <Badge variant="secondary">{t("total", { n: data.length })}</Badge>
       </div>
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">All Students — Manage Balances</CardTitle>
+          <CardTitle className="text-base">{t("all_students")}</CardTitle>
         </CardHeader>
         <CardContent>
           <StudentsBalanceTable students={data} />

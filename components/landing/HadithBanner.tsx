@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export function HadithBanner() {
   return (
-    <section className="w-full bg-[#f2ede8] py-10">
+    <section className="w-full bg-transparent py-10">
       <div className="container mx-auto px-4 flex flex-col items-center text-center">
         <p className="text-[#2c1f12] font-bold text-base mb-4 tracking-wide">
           قال النبيُّ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ:

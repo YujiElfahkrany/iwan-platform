@@ -20,7 +20,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const dir = locale === "ar" ? "rtl" : "ltr";
   return (
     <html lang={locale} dir={dir} className={`${marhey.variable} h-full`} suppressHydrationWarning>
-      <body className="min-h-full flex flex-col font-[family-name:var(--font-marhey)] antialiased bg-background text-foreground">
+      <body className="min-h-full flex flex-col font-[family-name:var(--font-marhey)] antialiased text-foreground">
         {children}
       </body>
     </html>

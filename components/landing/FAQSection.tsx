@@ -17,7 +17,7 @@ export function FAQSection() {
   ];
 
   return (
-    <section className="py-20 bg-[#f2ede8]">
+    <section className="py-20 bg-transparent">
       <div className="container mx-auto px-4 max-w-3xl">
         {/* Section header */}
         <div className="text-start mb-10">

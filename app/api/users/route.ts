@@ -22,8 +22,7 @@ export async function POST(req: NextRequest) {
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
-    const initialBalance = role === "student" ? 1000 : 0;
-    const user = await User.create({ name, email, passwordHash, role, balance: initialBalance, avatar: image, phone });
+    const user = await User.create({ name, email, passwordHash, role, balance: 0, avatar: image, phone });
 
     if (role === "teacher") {
       await TeacherProfile.create({ userId: user._id, ...profile });
