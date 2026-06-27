@@ -13,7 +13,7 @@
   },
   "hero": {
     "title": "Learn from the Best Teachers",
-    "subtitle": "Book 1-on-1 sessions or join group classes with qualified educators in any subject.",
+    "subtitle": "Book 1-on-1 sessions or join group classes with qualified Islamic studies educators.",
     "cta_student": "Register as Student",
     "cta_teacher": "Register as Teacher",
     "live_now": "Live sessions available now",
@@ -22,7 +22,7 @@
     "feat2_title": "Flexible Scheduling",
     "feat2_desc": "Browse available slots and book at a time that works for you.",
     "feat3_title": "Any Subject",
-    "feat3_desc": "From Quran and Arabic to Math, Science, and Programming.",
+    "feat3_desc": "From Quran and Tajweed to Fiqh, Aqeedah, and Seerah.",
     "login_student": "New student? Register here",
     "login_teacher": "New teacher? Register here"
   },
@@ -35,14 +35,23 @@
   "subjects": {
     "title": "Explore Subjects",
     "subtitle": "Find a teacher for any subject you want to master",
-    "math": "Mathematics",
-    "arabic": "Arabic",
-    "english": "English",
-    "science": "Science",
-    "history": "History",
-    "programming": "Programming",
+    "browse_btn": "Browse teachers →",
     "quran": "Quran",
-    "art": "Art"
+    "quran_desc": "Memorization, recitation, and deep understanding of the Holy Quran with qualified teachers.",
+    "tajweed": "Tajweed",
+    "tajweed_desc": "Master the rules of Quranic recitation to recite with beauty and precision.",
+    "fiqh": "Fiqh",
+    "fiqh_desc": "Learn Islamic jurisprudence covering worship, transactions, and everyday rulings.",
+    "aqeedah": "Aqeedah",
+    "aqeedah_desc": "Study Islamic creed and theology to strengthen your faith and understanding.",
+    "seerah": "Seerah",
+    "seerah_desc": "Explore the life and character of the Prophet Muhammad ﷺ in detail.",
+    "hadith": "Hadith",
+    "hadith_desc": "Study the sayings and traditions of the Prophet ﷺ and their sciences.",
+    "arabic": "Arabic",
+    "arabic_desc": "Arabic language, grammar, and eloquence — the language of the Quran.",
+    "tafseer": "Tafseer",
+    "tafseer_desc": "Understand the meaning and interpretation of the Quran verse by verse."
   },
   "howItWorks": {
     "title": "How It Works",
@@ -62,7 +71,7 @@
     "step2_detail2": "Read verified reviews from other students before booking.",
     "step2_detail3": "Browse open group classes for a more affordable learning option.",
     "step3_detail1": "Pay securely with your balance and get instant confirmation.",
-    "step3_detail2": "Join the live video session directly in your browser — no downloads needed.",
+    "step3_detail2": "Join the live video session via Zoom — you'll receive the link before it starts.",
     "step3_detail3": "Submit assignments, track your progress, and view marks all in one place."
   },
   "faq": {
@@ -70,11 +79,11 @@
     "q1": "How do I book a session?",
     "a1": "Browse teachers, view their available slots, and click Book & Pay. You'll receive a confirmation email.",
     "q2": "Can I cancel a booking?",
-    "a2": "Yes, you can cancel up to 24 hours before the session for a full refund.",
+    "a2": "Yes, you can cancel up to one week before the session. A 20% deduction will apply.",
     "q3": "How do group classes work?",
     "a3": "Teachers open classes for up to a set number of students. Enroll and pay — a video room opens at the scheduled time.",
     "q4": "What video platform is used?",
-    "a4": "Sessions run on Jitsi Meet, directly in your browser — no installation needed."
+    "a4": "Sessions run on Zoom — you'll receive a link before your session starts."
   },
   "auth": {
     "login": "Log In",

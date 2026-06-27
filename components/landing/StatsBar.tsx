@@ -6,16 +6,17 @@ interface Stats {
   teachers: number;
   students: number;
   classes: number;
+  subjects: number;
 }
 
 export function StatsBar({ stats }: { stats: Stats }) {
   const t = useTranslations("stats");
 
   const items = [
-    { icon: <GraduationCap className="h-6 w-6" />, value: stats.teachers || 50, label: t("teachers") },
-    { icon: <Users className="h-6 w-6" />, value: stats.students || 500, label: t("students") },
-    { icon: <BookOpen className="h-6 w-6" />, value: stats.classes || 200, label: t("classes") },
-    { icon: <Layers className="h-6 w-6" />, value: 8, label: t("subjects") },
+    { icon: <GraduationCap className="h-6 w-6" />, value: stats.teachers, label: t("teachers") },
+    { icon: <Users className="h-6 w-6" />, value: stats.students, label: t("students") },
+    { icon: <BookOpen className="h-6 w-6" />, value: stats.classes, label: t("classes") },
+    { icon: <Layers className="h-6 w-6" />, value: stats.subjects ?? 0, label: t("subjects") },
   ];
 
   return (

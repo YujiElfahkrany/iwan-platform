@@ -129,8 +129,14 @@
   html {
     background-image: url('/background.jpg');
     background-size: cover;
-    background-attachment: fixed;
-    background-position: center;
+    background-attachment: scroll;
+    background-position: top center;
+  }
+  @media (min-width: 768px) {
+    html {
+      background-attachment: fixed;
+      background-position: center;
+    }
   }
   body {
     @apply text-foreground;
@@ -141,15 +147,27 @@
 .bg-site-2 {
   background-image: url('/background2.jpg');
   background-size: cover;
-  background-attachment: fixed;
-  background-position: center;
+  background-attachment: scroll;
+  background-position: top center;
+}
+@media (min-width: 768px) {
+  .bg-site-2 {
+    background-attachment: fixed;
+    background-position: center;
+  }
 }
 
 .bg-site-3 {
   background-image: url('/background3.jpg');
   background-size: cover;
-  background-attachment: fixed;
-  background-position: center;
+  background-attachment: scroll;
+  background-position: top center;
+}
+@media (min-width: 768px) {
+  .bg-site-3 {
+    background-attachment: fixed;
+    background-position: center;
+  }
 }
 
 .banner-bg-1 {

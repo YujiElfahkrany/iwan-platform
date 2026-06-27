@@ -19,9 +19,9 @@ async function getStats() {
       User.countDocuments({ role: "student" }),
       Class.countDocuments({ status: { $in: ["open", "completed"] } }),
     ]);
-    return { teachers, students, classes };
+    return { teachers, students, classes, subjects: 8 };
   } catch {
-    return { teachers: 0, students: 0, classes: 0 };
+    return { teachers: 0, students: 0, classes: 0, subjects: 0 };
   }
 }
 

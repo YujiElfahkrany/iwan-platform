@@ -6,6 +6,33 @@ import { Footer } from "@/components/landing/Footer";
 import { Link } from "@/i18n/navigation";
 import { Users, Clock, BookOpen, Tag } from "lucide-react";
 
+const SUBJECT_MAP: Record<string, string[]> = {
+  quran:   ["القرآن", "quran"],
+  tajweed: ["التجويد", "tajweed"],
+  fiqh:    ["الفقه", "fiqh"],
+  aqeedah: ["العقيدة", "aqeedah"],
+  seerah:  ["السيرة", "seerah"],
+  hadith:  ["الحديث", "hadith"],
+  arabic:  ["العربية", "arabic"],
+  tafseer: ["التفسير", "tafseer"],
+};
+
+const SUBJECT_LABELS: Record<string, string> = {
+  quran:   "القرآن الكريم",
+  tajweed: "التجويد",
+  fiqh:    "الفقه",
+  aqeedah: "العقيدة",
+  seerah:  "السيرة النبوية",
+  hadith:  "الحديث",
+  arabic:  "اللغة العربية",
+  tafseer: "التفسير",
+};
+
+function buildRegex(subject: string) {
+  const terms = SUBJECT_MAP[subject] ?? [subject];
+  return new RegExp(terms.join("|"), "i");
+}
+
 async function getClasses(subject?: string) {
   try {
     await connectDB();
@@ -13,7 +40,7 @@ async function getClasses(subject?: string) {
       status: "open",
       startTime: { $gte: new Date() },
     };
-    if (subject) filter.subject = subject;
+    if (subject) filter.subject = { $regex: buildRegex(subject) };
 
     const classes = await Class.find(filter).sort({ startTime: 1 }).limit(50).lean();
     const teacherIds = [...new Set(classes.map((c) => c.teacherId.toString()))];
@@ -34,7 +61,6 @@ async function getClasses(subject?: string) {
       enrolledCount: c.enrolledStudents.length,
       totalSessions: c.totalSessions ?? 0,
       curriculumCount: c.curriculum?.length ?? 0,
-      status: c.status,
     }));
   } catch {
     return [];
@@ -42,8 +68,7 @@ async function getClasses(subject?: string) {
 }
 
 function formatDate(iso: string) {
-  const d = new Date(iso);
-  return d.toLocaleDateString("ar-EG", {
+  return new Date(iso).toLocaleDateString("ar-EG", {
     weekday: "short",
     year: "numeric",
     month: "short",
@@ -60,16 +85,6 @@ function formatDuration(startIso: string, endIso: string) {
   return hrs === Math.floor(hrs) ? `${Math.floor(hrs)} ساعة` : `${hrs.toFixed(1)} ساعة`;
 }
 
-const subjectColors: Record<string, string> = {
-  "رياضيات": "bg-blue-50 text-blue-700 border-blue-200",
-  "فيزياء": "bg-purple-50 text-purple-700 border-purple-200",
-  "لغة عربية": "bg-emerald-50 text-emerald-700 border-emerald-200",
-  "قرآن كريم": "bg-teal-50 text-teal-700 border-teal-200",
-  "برمجة": "bg-orange-50 text-orange-700 border-orange-200",
-  "لغة إنجليزية": "bg-indigo-50 text-indigo-700 border-indigo-200",
-  "تاريخ": "bg-amber-50 text-amber-700 border-amber-200",
-};
-
 export default async function ClassesPage({
   searchParams,
 }: {
@@ -77,24 +92,67 @@ export default async function ClassesPage({
 }) {
   const { subject } = await searchParams;
   const classes = await getClasses(subject);
+  const subjectLabel = subject ? (SUBJECT_LABELS[subject] ?? subject) : null;
 
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
-      <main className="flex-1 bg-[#1a1007]">
+      <main className="flex-1">
         <div className="mx-auto w-[90%] bg-[#f2ede8]/90 shadow-[0_0_60px_rgba(0,0,0,0.18)] min-h-screen">
-          {/* Header */}
-          <div className="bg-[#2c1f12] text-white py-14 text-center">
+
+          {/* Page header */}
+          <div className="bg-[#2c1f12]/95 text-white py-12 text-center">
             <div className="h-0.5 bg-gradient-to-r from-transparent via-[#c8973a] to-transparent mb-8" />
-            <h1 className="text-3xl font-bold mb-2">الفصول الجماعية</h1>
+            <h1 className="text-3xl font-bold mb-1">
+              {subjectLabel ? `فصول ${subjectLabel}` : "الفصول الجماعية"}
+            </h1>
             <p className="text-white/60 text-sm">
-              انضم إلى فصول مباشرة مع مجموعة من الطلاب بأسعار مخفضة
+              {subjectLabel
+                ? `الفصول المتاحة في ${subjectLabel}`
+                : "انضم إلى فصول مباشرة مع مجموعة من الطلاب بأسعار مخفضة"}
             </p>
             <div className="h-0.5 bg-gradient-to-r from-transparent via-[#c8973a] to-transparent mt-8" />
           </div>
 
-          {/* Classes list */}
+          {/* Subject filter tabs */}
+          <div className="border-b border-[#e5ddd4] bg-white/60 px-4 py-3 overflow-x-auto">
+            <div className="flex items-center gap-2 min-w-max mx-auto container">
+              <Link
+                href="/classes"
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
+                  !subject
+                    ? "bg-[#2c1f12] text-white"
+                    : "text-[#78716c] hover:text-[#2c1f12] hover:bg-[#f2ede8]"
+                }`}
+              >
+                الكل
+              </Link>
+              {Object.entries(SUBJECT_LABELS).map(([key, label]) => (
+                <Link
+                  key={key}
+                  href={`/classes?subject=${key}`}
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
+                    subject === key
+                      ? "bg-[#c8973a] text-white"
+                      : "text-[#78716c] hover:text-[#2c1f12] hover:bg-[#f2ede8]"
+                  }`}
+                >
+                  {label}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Classes grid */}
           <div className="container mx-auto px-4 py-12">
+            <div className="flex items-center gap-2 mb-6">
+              <span className="text-[#c8973a] text-xl">◁</span>
+              <h2 className="text-2xl font-bold text-[#2c1f12]">الفصول المتاحة</h2>
+              {classes.length > 0 && (
+                <span className="text-sm text-[#78716c] me-auto">{classes.length} فصل</span>
+              )}
+            </div>
+
             {classes.length === 0 ? (
               <div className="text-center py-20 text-[#78716c]">
                 <BookOpen className="h-12 w-12 mx-auto mb-4 text-[#c8973a]/40" />
@@ -105,8 +163,6 @@ export default async function ClassesPage({
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {classes.map((cls) => {
                   const spotsLeft = cls.maxStudents - cls.enrolledCount;
-                  const subjectColor = subjectColors[cls.subject] ?? "bg-[#f2ede8] text-[#2c1f12] border-[#e5ddd4]";
-
                   return (
                     <div
                       key={cls.id}
@@ -116,7 +172,7 @@ export default async function ClassesPage({
 
                       <div className="p-5 flex flex-col flex-1">
                         <div className="flex items-center justify-between mb-3">
-                          <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${subjectColor}`}>
+                          <span className="text-xs font-medium px-2.5 py-1 rounded-full border bg-[#c8973a]/10 text-[#c8973a] border-[#c8973a]/30">
                             {cls.subject}
                           </span>
                           <span className={`text-xs font-medium ${spotsLeft <= 3 ? "text-red-500" : "text-[#78716c]"}`}>
@@ -166,7 +222,7 @@ export default async function ClassesPage({
                             className="text-sm font-semibold px-4 py-1.5 rounded-full bg-[#2c1f12] text-white hover:bg-[#3d2b18] transition-colors"
                           >
                             احجز الآن
-                          </Link>
+          </Link>
                         </div>
                       </div>
                     </div>

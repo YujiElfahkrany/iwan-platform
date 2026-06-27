@@ -22,32 +22,27 @@ import type { E164Number } from "libphonenumber-js/core";
 const TIMEZONES = ["UTC", "America/New_York", "America/Los_Angeles", "Europe/London", "Europe/Paris", "Asia/Dubai", "Asia/Riyadh", "Asia/Cairo", "Asia/Karachi"];
 const LANGUAGES = ["English", "Arabic", "French", "Spanish", "Urdu"];
 
-const SKIN_TONE_BASES_FEMALE = ["woman-hijab-blue", "woman-hijab-red", "woman-hijab-green", "woman-hijab-yellow", "woman-niqab-grey", "woman-niqab-blue"];
-
 const AVATARS: { name: string; url: string; gender: "male" | "female" }[] = [
-  ...["man-kufi", "man-keffiyeh", "man-keffiyeh-blonde", "man-casual",
-      "man-thobe", "man-keffiyeh-grey", "man-keffiyeh-gold", "man-thobe-white",
-      "man-beard-dark", "man-glasses-elder",
+  ...[
+    "man-kufi", "man-kufi-light", "man-kufi-medium",
+    "man-keffiyeh", "man-keffiyeh-light", "man-keffiyeh-medium", "man-keffiyeh-dark",
+    "man-keffiyeh-blonde", "man-keffiyeh-blonde-light", "man-keffiyeh-blonde-medium", "man-keffiyeh-blonde-dark",
+    "man-casual", "man-casual-light", "man-casual-medium", "man-casual-dark",
+    "man-thobe", "man-thobe-light",
+    "man-keffiyeh-grey", "man-keffiyeh-grey-light", "man-keffiyeh-grey-medium",
+    "man-keffiyeh-gold", "man-keffiyeh-gold-light", "man-keffiyeh-gold-dark",
+    "man-thobe-white", "man-thobe-white-medium",
+    "man-beard-dark", "man-glasses-elder",
   ].map((name) => ({ name, url: `/avatars/${name}.png`, gender: "male" as const })),
   ...[
-    "man-kufi-light", "man-kufi-medium",
-    "man-keffiyeh-light", "man-keffiyeh-medium", "man-keffiyeh-dark",
-    "man-keffiyeh-blonde-light", "man-keffiyeh-blonde-medium", "man-keffiyeh-blonde-dark",
-    "man-casual-light", "man-casual-medium", "man-casual-dark",
-    "man-thobe-light",
-    "man-keffiyeh-grey-light", "man-keffiyeh-grey-medium",
-    "man-keffiyeh-gold-light", "man-keffiyeh-gold-dark",
-    "man-thobe-white-medium",
-  ].map((name) => ({ name, url: `/avatars/${name}.png`, gender: "male" as const })),
-  ...["woman-hijab-blue", "woman-hijab-dark", "woman-hijab-red", "woman-hijab-green",
-      "woman-hijab-yellow", "woman-niqab-grey", "woman-niqab-blue",
-      "woman-niqab-black", "woman-casual-red", "woman-dark-skin", "woman-glasses",
+    "woman-hijab-blue", "woman-hijab-blue-light", "woman-hijab-blue-medium",
+    "woman-hijab-dark",
+    "woman-hijab-red", "woman-hijab-red-light", "woman-hijab-red-medium", "woman-hijab-red-dark",
+    "woman-hijab-green", "woman-hijab-green-light", "woman-hijab-green-medium", "woman-hijab-green-dark",
+    "woman-niqab-grey", "woman-niqab-grey-light", "woman-niqab-grey-medium", "woman-niqab-grey-dark",
+    "woman-niqab-blue", "woman-niqab-blue-light", "woman-niqab-blue-medium", "woman-niqab-blue-dark",
+    "woman-niqab-black",
   ].map((name) => ({ name, url: `/avatars/${name}.png`, gender: "female" as const })),
-  ...SKIN_TONE_BASES_FEMALE.flatMap((name) =>
-    (["light", "medium", "dark"] as const).map((tone) => ({
-      name: `${name}-${tone}`, url: `/avatars/${name}-${tone}.png`, gender: "female" as const,
-    }))
-  ),
 ];
 
 type FormData = {
