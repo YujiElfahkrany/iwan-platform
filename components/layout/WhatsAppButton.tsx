@@ -21,7 +21,7 @@ export function WhatsAppButton() {
       }`}
     >
       {/* Label above */}
-      <span className="text-xs font-semibold text-[#2c1f12] bg-[#f2ede8]/95 border border-[#c8973a]/40 px-3 py-1.5 rounded-full shadow-md whitespace-nowrap">
+      <span dir={isRtl ? "rtl" : "ltr"} className="text-xs font-semibold text-[#2c1f12] bg-[#f2ede8]/95 border border-[#c8973a]/40 px-3 py-1.5 rounded-full shadow-md whitespace-nowrap">
         {label}
       </span>
 
