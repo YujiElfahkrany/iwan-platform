@@ -2,9 +2,9 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
-import { ThemeProvider } from "@/components/theme-provider";
 import { SessionProvider } from "@/components/session-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { WhatsAppButton } from "@/components/layout/WhatsAppButton";
 
 export default async function LocaleLayout({
   children,
@@ -22,12 +22,11 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider messages={messages}>
-      <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-        <SessionProvider>
-          {children}
-          <Toaster richColors position={dir === "rtl" ? "top-left" : "top-right"} />
-        </SessionProvider>
-      </ThemeProvider>
+      <SessionProvider>
+        {children}
+        <WhatsAppButton />
+        <Toaster richColors position={dir === "rtl" ? "top-left" : "top-right"} />
+      </SessionProvider>
     </NextIntlClientProvider>
   );
 }

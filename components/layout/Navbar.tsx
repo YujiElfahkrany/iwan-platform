@@ -98,7 +98,7 @@ export function Navbar() {
               <SheetTrigger className="md:hidden p-2 rounded-lg text-[#2c1f12] hover:bg-[#c8973a]/15 transition-colors">
                 <Menu className="h-5 w-5" />
               </SheetTrigger>
-              <SheetContent side={locale === "ar" ? "right" : "left"} className="bg-[#f2ede8] border-[#e5ddd4]">
+              <SheetContent side={locale === "ar" ? "right" : "left"} className="bg-[#f2ede8] border-[#e5ddd4] px-8">
                 <div className="flex flex-col gap-5 mt-8">
                   {navLinks.map((l) => (
                     <Link

@@ -92,7 +92,7 @@ export function HowItWorks() {
         {/* Expandable details panel — inline styles avoid Tailwind purge */}
         <div
           style={{
-            maxHeight: open ? "600px" : "0px",
+            maxHeight: open ? "1400px" : "0px",
             opacity: open ? 1 : 0,
             marginTop: open ? "1rem" : "0",
             overflow: "hidden",

@@ -5,6 +5,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/landing/Footer";
 import { Link } from "@/i18n/navigation";
 import { Users, Clock, BookOpen, Tag } from "lucide-react";
+import { getTranslations, getLocale } from "next-intl/server";
 
 const SUBJECT_MAP: Record<string, string[]> = {
   quran:   ["القرآن", "quran"],
@@ -17,16 +18,7 @@ const SUBJECT_MAP: Record<string, string[]> = {
   tafseer: ["التفسير", "tafseer"],
 };
 
-const SUBJECT_LABELS: Record<string, string> = {
-  quran:   "القرآن الكريم",
-  tajweed: "التجويد",
-  fiqh:    "الفقه",
-  aqeedah: "العقيدة",
-  seerah:  "السيرة النبوية",
-  hadith:  "الحديث",
-  arabic:  "اللغة العربية",
-  tafseer: "التفسير",
-};
+const SUBJECT_KEYS = ["quran", "tajweed", "fiqh", "aqeedah", "seerah", "hadith", "arabic", "tafseer"];
 
 function buildRegex(subject: string) {
   const terms = SUBJECT_MAP[subject] ?? [subject];
@@ -67,8 +59,8 @@ async function getClasses(subject?: string) {
   }
 }
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("ar-EG", {
+function formatDate(iso: string, locale: string) {
+  return new Date(iso).toLocaleDateString(locale === "ar" ? "ar-EG" : "en-GB", {
     weekday: "short",
     year: "numeric",
     month: "short",
@@ -78,11 +70,11 @@ function formatDate(iso: string) {
   });
 }
 
-function formatDuration(startIso: string, endIso: string) {
+function formatDuration(startIso: string, endIso: string, minuteLabel: string, hourLabel: string) {
   const mins = (new Date(endIso).getTime() - new Date(startIso).getTime()) / 60000;
-  if (mins < 60) return `${mins} دقيقة`;
+  if (mins < 60) return `${mins} ${minuteLabel}`;
   const hrs = mins / 60;
-  return hrs === Math.floor(hrs) ? `${Math.floor(hrs)} ساعة` : `${hrs.toFixed(1)} ساعة`;
+  return `${hrs === Math.floor(hrs) ? Math.floor(hrs) : hrs.toFixed(1)} ${hourLabel}`;
 }
 
 export default async function ClassesPage({
@@ -91,8 +83,15 @@ export default async function ClassesPage({
   searchParams: Promise<{ subject?: string }>;
 }) {
   const { subject } = await searchParams;
-  const classes = await getClasses(subject);
-  const subjectLabel = subject ? (SUBJECT_LABELS[subject] ?? subject) : null;
+  const locale = await getLocale();
+
+  const [classes, t, ts] = await Promise.all([
+    getClasses(subject),
+    getTranslations("browse"),
+    getTranslations("subjects"),
+  ]);
+
+  const subjectLabel = subject ? (ts as (k: string) => string)(subject) : null;
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -104,12 +103,12 @@ export default async function ClassesPage({
           <div className="bg-[#2c1f12]/95 text-white py-12 text-center">
             <div className="h-0.5 bg-gradient-to-r from-transparent via-[#c8973a] to-transparent mb-8" />
             <h1 className="text-3xl font-bold mb-1">
-              {subjectLabel ? `فصول ${subjectLabel}` : "الفصول الجماعية"}
+              {subjectLabel ? t("classes_of", { subject: subjectLabel }) : t("classes")}
             </h1>
             <p className="text-white/60 text-sm">
               {subjectLabel
-                ? `الفصول المتاحة في ${subjectLabel}`
-                : "انضم إلى فصول مباشرة مع مجموعة من الطلاب بأسعار مخفضة"}
+                ? t("classes_subject_subtitle", { subject: subjectLabel })
+                : t("classes_subtitle")}
             </p>
             <div className="h-0.5 bg-gradient-to-r from-transparent via-[#c8973a] to-transparent mt-8" />
           </div>
@@ -125,9 +124,9 @@ export default async function ClassesPage({
                     : "text-[#78716c] hover:text-[#2c1f12] hover:bg-[#f2ede8]"
                 }`}
               >
-                الكل
+                {t("all")}
               </Link>
-              {Object.entries(SUBJECT_LABELS).map(([key, label]) => (
+              {SUBJECT_KEYS.map((key) => (
                 <Link
                   key={key}
                   href={`/classes?subject=${key}`}
@@ -137,7 +136,7 @@ export default async function ClassesPage({
                       : "text-[#78716c] hover:text-[#2c1f12] hover:bg-[#f2ede8]"
                   }`}
                 >
-                  {label}
+                  {(ts as (k: string) => string)(key)}
                 </Link>
               ))}
             </div>
@@ -147,17 +146,17 @@ export default async function ClassesPage({
           <div className="container mx-auto px-4 py-12">
             <div className="flex items-center gap-2 mb-6">
               <span className="text-[#c8973a] text-xl">◁</span>
-              <h2 className="text-2xl font-bold text-[#2c1f12]">الفصول المتاحة</h2>
+              <h2 className="text-2xl font-bold text-[#2c1f12]">{t("classes_available")}</h2>
               {classes.length > 0 && (
-                <span className="text-sm text-[#78716c] me-auto">{classes.length} فصل</span>
+                <span className="text-sm text-[#78716c] me-auto">{t("class_count", { n: classes.length })}</span>
               )}
             </div>
 
             {classes.length === 0 ? (
               <div className="text-center py-20 text-[#78716c]">
                 <BookOpen className="h-12 w-12 mx-auto mb-4 text-[#c8973a]/40" />
-                <p className="text-lg font-medium">لا توجد فصول متاحة حالياً</p>
-                <p className="text-sm mt-1">تحقق مجدداً قريباً</p>
+                <p className="text-lg font-medium">{t("no_classes")}</p>
+                <p className="text-sm mt-1">{t("check_back")}</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -176,7 +175,7 @@ export default async function ClassesPage({
                             {cls.subject}
                           </span>
                           <span className={`text-xs font-medium ${spotsLeft <= 3 ? "text-red-500" : "text-[#78716c]"}`}>
-                            {spotsLeft} مقعد متاح
+                            {t("spots_left", { n: spotsLeft })}
                           </span>
                         </div>
 
@@ -193,36 +192,34 @@ export default async function ClassesPage({
                         <div className="space-y-1.5 text-xs text-[#78716c] mt-auto">
                           <div className="flex items-center gap-2">
                             <Clock className="h-3.5 w-3.5 text-[#4db6ac] shrink-0" />
-                            <span>{formatDate(cls.startTime)}</span>
+                            <span>{formatDate(cls.startTime, locale)}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <Tag className="h-3.5 w-3.5 text-[#4db6ac] shrink-0" />
-                            <span>المدة: {formatDuration(cls.startTime, cls.endTime)}</span>
+                            <span>{t("duration", { d: formatDuration(cls.startTime, cls.endTime, t("minute"), t("hour")) })}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <Users className="h-3.5 w-3.5 text-[#4db6ac] shrink-0" />
-                            <span>
-                              {cls.enrolledCount} / {cls.maxStudents} طالب — {cls.teacherName}
-                            </span>
+                            <span>{t("students_enrolled", { enrolled: cls.enrolledCount, max: cls.maxStudents, teacher: cls.teacherName })}</span>
                           </div>
                           {cls.totalSessions > 0 && (
                             <div className="flex items-center gap-2">
                               <BookOpen className="h-3.5 w-3.5 text-[#4db6ac] shrink-0" />
-                              <span>{cls.totalSessions} جلسة · {cls.curriculumCount} واجب</span>
+                              <span>{t("sessions_assignments", { sessions: cls.totalSessions, assignments: cls.curriculumCount })}</span>
                             </div>
                           )}
                         </div>
 
                         <div className="flex items-center justify-between mt-4 pt-4 border-t border-[#f0ebe3]">
                           <span className="font-bold text-[#c8973a] text-lg">
-                            {cls.price} ج.م
+                            {cls.price} LE
                           </span>
                           <Link
                             href={`/teachers/${cls.teacherId}`}
                             className="text-sm font-semibold px-4 py-1.5 rounded-full bg-[#2c1f12] text-white hover:bg-[#3d2b18] transition-colors"
                           >
-                            احجز الآن
-          </Link>
+                            {t("book_now")}
+                          </Link>
                         </div>
                       </div>
                     </div>

@@ -2,6 +2,7 @@ import { useTranslations } from "next-intl";
 import { Users, GraduationCap, BookOpen, Layers } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 
+
 interface Stats {
   teachers: number;
   students: number;
@@ -29,7 +30,7 @@ export function StatsBar({ stats }: { stats: Stats }) {
             href="/auth/register/student"
             className="inline-flex items-center justify-center bg-gradient-to-b from-[#d4a843] to-[#a67c2e] text-white font-bold px-7 py-2.5 rounded-lg text-sm shadow-sm hover:from-[#c8973a] hover:to-[#8a6420] transition-all whitespace-nowrap"
           >
-            سجّل الآن
+            {t("register_now")}
           </Link>
 
           {/* Stats — right side fills the rest */}

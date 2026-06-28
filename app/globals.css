@@ -126,21 +126,26 @@
   * {
     @apply border-border outline-ring/50;
   }
-  html {
-    background-image: url('/background.jpg');
-    background-size: cover;
-    background-attachment: scroll;
-    background-position: top center;
-  }
-  @media (min-width: 768px) {
-    html {
-      background-attachment: fixed;
-      background-position: center;
-    }
-  }
   body {
     @apply text-foreground;
     background: rgba(248, 245, 240, 0.45);
+  }
+
+  /* Fixed background via pseudo-element — works on iOS unlike background-attachment:fixed */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url('/background.jpg');
+    background-size: cover;
+    background-position: 30% center;
+    z-index: -1;
+  }
+
+  @media (min-width: 768px) {
+    body::before {
+      background-position: center;
+    }
   }
 }
 

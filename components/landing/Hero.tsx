@@ -63,34 +63,34 @@ export function Hero() {
             </div>
 
             {/* CTA buttons with illustrations */}
-            <div className="grid grid-cols-2 gap-8 w-fit">
+            <div className="grid grid-cols-2 gap-3 sm:gap-8 w-full max-w-sm">
               {/* Images — route to dashboard if logged in, else login with role hint */}
-              <Link href={studentHref} className="flex items-end justify-center h-60 group">
-                <Image src="/student-login.png" alt="الطالب" width={180} height={240} className="object-contain group-hover:scale-105 transition-transform duration-200" unoptimized />
+              <Link href={studentHref} className="flex items-end justify-center h-44 sm:h-60 group">
+                <Image src="/student-login.png" alt="الطالب" width={180} height={240} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-200" unoptimized />
               </Link>
-              <Link href={teacherHref} className="flex items-end justify-center h-60 group">
-                <Image src="/teacher-login.png" alt="المعلم" width={180} height={240} className="object-contain translate-y-[20px] group-hover:scale-105 transition-transform duration-200" unoptimized />
+              <Link href={teacherHref} className="flex items-end justify-center h-44 sm:h-60 group">
+                <Image src="/teacher-login.png" alt="المعلم" width={180} height={240} className="w-full h-full object-contain translate-y-[20px] group-hover:scale-105 transition-transform duration-200" unoptimized />
               </Link>
               {/* Primary buttons */}
               <div className="flex flex-col items-center gap-1.5">
-                <Button asChild size="lg" className="w-full bg-gradient-to-b from-[#d4a843] to-[#a67c2e] hover:from-[#c8973a] hover:to-[#96712a] text-white h-14 rounded-xl text-base font-bold shadow-md shadow-[#c8973a]/30 border-0">
-                  <Link href={studentHref}>
-                    <GraduationCap className="h-5 w-5 me-2" />
-                    {t("cta_student")}
+                <Button asChild size="lg" className="w-full bg-gradient-to-b from-[#d4a843] to-[#a67c2e] hover:from-[#c8973a] hover:to-[#96712a] text-white min-h-[3rem] h-auto py-2 rounded-xl text-xs font-bold shadow-md shadow-[#c8973a]/30 border-0 px-2">
+                  <Link href={studentHref} className="flex flex-col items-center gap-0.5 text-center leading-tight">
+                    <GraduationCap className="h-4 w-4 shrink-0" />
+                    <span>{t("cta_student")}</span>
                   </Link>
                 </Button>
-                <Link href="/auth/register/student" className="text-xs text-[#8a6420] hover:underline">
+                <Link href="/auth/register/student" className="text-xs text-[#8a6420] hover:underline text-center">
                   {t("login_student")}
                 </Link>
               </div>
               <div className="flex flex-col items-center gap-1.5">
-                <Button asChild variant="outline" size="lg" className="w-full h-14 rounded-xl text-base border-[#c8973a] text-[#c8973a] hover:bg-[#c8973a]/8 hover:text-[#8a6420] font-semibold">
-                  <Link href={teacherHref}>
-                    <BookOpen className="h-5 w-5 me-2" />
-                    {t("cta_teacher")}
+                <Button asChild variant="outline" size="lg" className="w-full min-h-[3rem] h-auto py-2 rounded-xl text-xs border-[#c8973a] text-[#c8973a] hover:bg-[#c8973a]/8 hover:text-[#8a6420] font-semibold px-2">
+                  <Link href={teacherHref} className="flex flex-col items-center gap-0.5 text-center leading-tight">
+                    <BookOpen className="h-4 w-4 shrink-0" />
+                    <span>{t("cta_teacher")}</span>
                   </Link>
                 </Button>
-                <Link href="/auth/register/teacher" className="text-xs text-[#8a6420] hover:underline">
+                <Link href="/auth/register/teacher" className="text-xs text-[#8a6420] hover:underline text-center">
                   {t("login_teacher")}
                 </Link>
               </div>
