@@ -17,7 +17,7 @@ export function WhatsAppButton() {
       rel="noopener noreferrer"
       aria-label={label}
       className={`fixed bottom-6 z-50 flex flex-col items-center gap-1.5 group hover:scale-105 transition-all duration-200 ${
-        isRtl ? "right-6" : "left-6"
+        isRtl ? "left-6" : "right-6"
       }`}
     >
       {/* Label above */}
@@ -26,12 +26,12 @@ export function WhatsAppButton() {
       </span>
 
       {/* Logo circle */}
-      <div className="w-12 h-12 rounded-full bg-[#f2ede8] border-2 border-[#c8973a]/50 shadow-lg flex items-center justify-center shrink-0">
+      <div className="w-16 h-16 rounded-full bg-[#f2ede8] border-2 border-[#c8973a]/50 shadow-lg flex items-center justify-center shrink-0">
         <Image
           src="/logo.png"
           alt="Iwan"
-          width={36}
-          height={36}
+          width={48}
+          height={48}
           className="rounded-full"
           unoptimized
         />

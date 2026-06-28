@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -36,7 +36,7 @@ interface ClassProgress {
   submissions: Submission[];
 }
 
-// SVG donut chart — segments drawn clockwise from 12 o'clock
+// SVG donut chart — 2 colors: completed vs remaining
 function DonutChart({
   approved,
   pending,
@@ -56,42 +56,28 @@ function DonutChart({
   if (total === 0) return null;
 
   const pct = Math.round((approved / total) * 100);
-
-  const segments = [
-    { count: approved, color: "#22c55e" },
-    { count: pending, color: "#f59e0b" },
-    { count: rejected, color: "#ef4444" },
-    { count: notSubmitted, color: "#d1d5db" },
-  ];
-
-  // dashoffset = C*0.25 starts at 12 o'clock; each segment subtracts its arc
-  let offset = C * 0.25;
+  const approvedArc = (approved / total) * C;
+  // Start at 12 o'clock: dashoffset = C * 0.25
+  const startOffset = C * 0.25;
 
   return (
-    <svg viewBox="0 0 100 100" width={size} height={size} style={{ transform: "scale(1)" }}>
-      {/* Track */}
-      <circle cx="50" cy="50" r={r} fill="none" stroke="#e5e7eb" strokeWidth="14" />
-      {segments
-        .filter((s) => s.count > 0)
-        .map((seg, i) => {
-          const arc = (seg.count / total) * C;
-          const dashOffset = C - offset;
-          offset -= arc;
-          return (
-            <circle
-              key={i}
-              cx="50"
-              cy="50"
-              r={r}
-              fill="none"
-              stroke={seg.color}
-              strokeWidth="14"
-              strokeDasharray={`${arc} ${C - arc}`}
-              strokeDashoffset={dashOffset}
-              strokeLinecap="butt"
-            />
-          );
-        })}
+    <svg viewBox="0 0 100 100" width={size} height={size}>
+      {/* Remaining (background ring) */}
+      <circle cx="50" cy="50" r={r} fill="none" stroke="#e2d5c3" strokeWidth="14" />
+      {/* Completed (foreground arc) */}
+      {approved > 0 && (
+        <circle
+          cx="50"
+          cy="50"
+          r={r}
+          fill="none"
+          stroke="#c8973a"
+          strokeWidth="14"
+          strokeDasharray={`${approvedArc} ${C - approvedArc}`}
+          strokeDashoffset={startOffset}
+          strokeLinecap="butt"
+        />
+      )}
       {/* Center percentage */}
       <text
         x="50"
@@ -123,6 +109,74 @@ function Legend({ label, color, count }: { label: string; color: string; count: 
     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
       <span className="inline-block h-2.5 w-2.5 rounded-full shrink-0" style={{ background: color }} />
       {label}: {count}
+    </div>
+  );
+}
+
+function AssignmentRow({
+  classId,
+  item,
+  sub,
+  isUploading,
+  onUpload,
+  t,
+  statusIcon,
+}: {
+  classId: string;
+  item: CurriculumItem;
+  sub: Submission | undefined;
+  isUploading: boolean;
+  onUpload: (classId: string, sessionNumber: number, file: File) => void;
+  t: ReturnType<typeof useTranslations>;
+  statusIcon: (status: string | undefined) => React.ReactNode;
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  return (
+    <div className="flex items-center gap-3 py-2.5 border-b last:border-0">
+      {statusIcon(sub?.status)}
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium truncate">{item.assignmentTitle}</p>
+        <p className="text-xs text-muted-foreground">
+          {t("after_session", { n: item.sessionNumber })} · {t("worth", { n: item.maxMarks })}
+          {item.description && ` · ${item.description}`}
+        </p>
+        {sub?.feedback && (
+          <p className="text-xs text-muted-foreground italic mt-0.5">"{sub.feedback}"</p>
+        )}
+      </div>
+      <div className="flex items-center gap-2 shrink-0">
+        {sub?.status === "approved" && sub.mark !== undefined && (
+          <span className="text-sm font-bold text-green-700">{sub.mark}/{item.maxMarks}</span>
+        )}
+        {sub?.status === "pending" && (
+          <Badge variant="secondary" className="text-xs">{t("status_pending")}</Badge>
+        )}
+        {(sub?.status === "rejected" || !sub) && (
+          <>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={isUploading}
+              onClick={() => fileRef.current?.click()}
+            >
+              {isUploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5 me-1" />}
+              {sub?.status === "rejected" ? t("resubmit_btn") : t("upload_btn")}
+            </Button>
+            <input
+              ref={fileRef}
+              type="file"
+              className="hidden"
+              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) onUpload(classId, item.sessionNumber, file);
+                if (fileRef.current) fileRef.current.value = "";
+              }}
+            />
+          </>
+        )}
+      </div>
     </div>
   );
 }
@@ -261,53 +315,22 @@ export default function StudentProgressPage() {
                   <div className="border-t pt-3 space-y-0">
                     {cls.curriculum
                       .sort((a, b) => a.sessionNumber - b.sessionNumber)
-                      .map((item) => {
+                      .map((item, idx) => {
                         const sub = submissions.find((s) => s.sessionNumber === item.sessionNumber);
                         const key = `${cls._id}-${item.sessionNumber}`;
                         const isUploading = uploading === key;
 
                         return (
-                          <div key={item.sessionNumber} className="flex items-center gap-3 py-2.5 border-b last:border-0">
-                            {statusIcon(sub?.status)}
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium truncate">{item.assignmentTitle}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {t("after_session", { n: item.sessionNumber })} · {t("worth", { n: item.maxMarks })}
-                                {item.description && ` · ${item.description}`}
-                              </p>
-                              {sub?.feedback && (
-                                <p className="text-xs text-muted-foreground italic mt-0.5">"{sub.feedback}"</p>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-2 shrink-0">
-                              {sub?.status === "approved" && sub.mark !== undefined && (
-                                <span className="text-sm font-bold text-green-700">{sub.mark}/{item.maxMarks}</span>
-                              )}
-                              {sub?.status === "pending" && (
-                                <Badge variant="secondary" className="text-xs">{t("status_pending")}</Badge>
-                              )}
-                              {(sub?.status === "rejected" || !sub) && (
-                                <label className="cursor-pointer">
-                                  <Button size="sm" variant="outline" asChild disabled={isUploading}>
-                                    <span>
-                                      {isUploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5 me-1" />}
-                                      {sub?.status === "rejected" ? t("resubmit_btn") : t("upload_btn")}
-                                    </span>
-                                  </Button>
-                                  <input
-                                    type="file"
-                                    className="hidden"
-                                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                                    onChange={(e) => {
-                                      const file = e.target.files?.[0];
-                                      if (file) submit(cls._id, item.sessionNumber, file);
-                                      e.target.value = "";
-                                    }}
-                                  />
-                                </label>
-                              )}
-                            </div>
-                          </div>
+                          <AssignmentRow
+                            key={`${key}-${idx}`}
+                            classId={cls._id}
+                            item={item}
+                            sub={sub}
+                            isUploading={isUploading}
+                            onUpload={submit}
+                            t={t}
+                            statusIcon={statusIcon}
+                          />
                         );
                       })}
                   </div>

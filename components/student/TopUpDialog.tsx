@@ -107,7 +107,7 @@ export function TopUpDialog({ balance: initialBalance }: TopUpDialogProps) {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
           onClick={(e) => { if (e.target === e.currentTarget) setOpen(false); }}
         >
-          <div className="bg-card rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+          <div className="bg-card text-foreground rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
             {/* Header */}
             <div className="flex items-center justify-between p-5 border-b">
               <h2 className="font-semibold text-lg text-[#2c1f12] dark:text-foreground">{t("title")}</h2>
