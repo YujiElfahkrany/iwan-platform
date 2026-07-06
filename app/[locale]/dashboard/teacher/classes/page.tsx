@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Loader2, Plus, Users, Clock, Trash2, BookOpen, ChevronRight, ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
@@ -25,7 +27,10 @@ interface ClassItem {
   status: string;
   totalSessions: number;
   curriculum: { sessionNumber: number; assignmentTitle: string; maxMarks: number }[];
+  daysOfWeek?: string[];
 }
+
+const DAYS_OF_WEEK = ["saturday", "sunday", "monday", "tuesday", "wednesday", "thursday", "friday"];
 
 interface CurriculumRow {
   sessionNumber: number;
@@ -43,6 +48,7 @@ const defaultForm = {
   endTime: "",
   price: 15,
   maxStudents: 10,
+  daysOfWeek: [] as string[],
 };
 
 export default function TeacherClassesPage() {
@@ -56,6 +62,8 @@ export default function TeacherClassesPage() {
   const [form, setForm] = useState(defaultForm);
   const [totalSessions, setTotalSessions] = useState(1);
   const [curriculum, setCurriculum] = useState<CurriculumRow[]>([]);
+  const [isFree, setIsFree] = useState(false);
+  const [subjectsList, setSubjectsList] = useState<string[]>([]);
 
   const fetchClasses = useCallback(async () => {
     setLoading(true);
@@ -65,9 +73,27 @@ export default function TeacherClassesPage() {
   }, []);
 
   useEffect(() => { fetchClasses(); }, [fetchClasses]);
+  useEffect(() => {
+    fetch("/api/subjects").then((r) => r.json()).then(setSubjectsList).catch(() => {});
+  }, []);
 
-  function update(k: string, v: string | number) {
+  function update(k: string, v: string | number | string[]) {
     setForm((f) => ({ ...f, [k]: v }));
+  }
+
+  function toggleDay(day: string) {
+    setForm((f) => ({
+      ...f,
+      daysOfWeek: f.daysOfWeek.includes(day)
+        ? f.daysOfWeek.filter((d) => d !== day)
+        : [...f.daysOfWeek, day],
+    }));
+  }
+
+  function toggleFree(checked: boolean) {
+    setIsFree(checked);
+    if (checked) update("price", 0);
+    else if (form.price === 0) update("price", 15);
   }
 
   function addAssignment() {
@@ -90,6 +116,7 @@ export default function TeacherClassesPage() {
     setForm(defaultForm);
     setTotalSessions(1);
     setCurriculum([]);
+    setIsFree(false);
   }
 
   function handleOpenChange(val: boolean) {
@@ -160,12 +187,48 @@ export default function TeacherClassesPage() {
               <div className="space-y-4 mt-2">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-2 space-y-1"><Label>{t("title_field")}</Label><Input required value={form.title} onChange={(e) => update("title", e.target.value)} /></div>
-                  <div className="space-y-1"><Label>{t("subject_field")}</Label><Input required value={form.subject} onChange={(e) => update("subject", e.target.value)} /></div>
-                  <div className="space-y-1"><Label>{t("price_usd")}</Label><Input type="number" min={1} value={form.price} onChange={(e) => update("price", parseFloat(e.target.value))} /></div>
+                  <div className="space-y-1">
+                    <Label>{t("subject_field")}</Label>
+                    <Select value={form.subject} onValueChange={(v) => update("subject", v ?? "")}>
+                      <SelectTrigger className="w-full"><SelectValue placeholder={t("subject_field")} /></SelectTrigger>
+                      <SelectContent>
+                        {subjectsList.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <Label>{t("price_usd")}</Label>
+                      <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <Checkbox checked={isFree} onCheckedChange={(v) => toggleFree(v === true)} />
+                        {t("mark_free")}
+                      </label>
+                    </div>
+                    <Input type="number" min={0} disabled={isFree} value={isFree ? 0 : form.price} onChange={(e) => update("price", parseFloat(e.target.value))} />
+                  </div>
                   <div className="space-y-1"><Label>{t("date")}</Label><Input type="date" required value={form.date} onChange={(e) => update("date", e.target.value)} min={new Date().toISOString().split("T")[0]} /></div>
                   <div className="space-y-1"><Label>{t("max_students")}</Label><Input type="number" min={2} max={50} value={form.maxStudents} onChange={(e) => update("maxStudents", parseInt(e.target.value))} /></div>
                   <div className="space-y-1"><Label>{t("start_time")}</Label><Input type="time" required value={form.startTime} onChange={(e) => update("startTime", e.target.value)} /></div>
                   <div className="space-y-1"><Label>{t("end_time")}</Label><Input type="time" required value={form.endTime} onChange={(e) => update("endTime", e.target.value)} /></div>
+                  <div className="col-span-2 space-y-1">
+                    <Label>{t("session_days")}</Label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {DAYS_OF_WEEK.map((day) => (
+                        <button
+                          key={day}
+                          type="button"
+                          onClick={() => toggleDay(day)}
+                          className={`px-2.5 py-1 rounded-full text-xs border transition-colors ${
+                            form.daysOfWeek.includes(day)
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "border-border hover:border-primary"
+                          }`}
+                        >
+                          {t(`day_${day}`)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   <div className="col-span-2 space-y-1"><Label>{t("description")}</Label><Textarea value={form.description} onChange={(e) => update("description", e.target.value)} rows={3} /></div>
                 </div>
                 <Button
@@ -294,9 +357,23 @@ export default function TeacherClassesPage() {
               </CardHeader>
               <CardContent className="space-y-2 text-sm text-muted-foreground">
                 <p className="flex items-center gap-2"><Clock className="h-4 w-4" />{format(new Date(cls.startTime), "PPP")} · {format(new Date(cls.startTime), "HH:mm")} – {format(new Date(cls.endTime), "HH:mm")}</p>
-                <p className="flex items-center gap-2"><Users className="h-4 w-4" />{t("students_count", { enrolled: cls.enrolledStudents.length, max: cls.maxStudents })} · {cls.price} LE{t("per_student")}</p>
+                <p className="flex items-center gap-2">
+                  <Users className="h-4 w-4" />{t("students_count", { enrolled: cls.enrolledStudents.length, max: cls.maxStudents })} ·{" "}
+                  {cls.price === 0 ? (
+                    <span className="font-semibold text-green-600 dark:text-green-500">{t("free_label")}</span>
+                  ) : (
+                    <>{cls.price} LE{t("per_student")}</>
+                  )}
+                </p>
                 {cls.totalSessions > 0 && (
                   <p className="flex items-center gap-2"><BookOpen className="h-4 w-4" />{t("sessions_count", { n: cls.totalSessions })} · {cls.curriculum?.length ?? 0} {t("assignments_count")}</p>
+                )}
+                {!!cls.daysOfWeek?.length && (
+                  <p className="flex flex-wrap items-center gap-1.5">
+                    {cls.daysOfWeek.map((d) => (
+                      <Badge key={d} variant="outline" className="text-xs">{t(`day_${d}`)}</Badge>
+                    ))}
+                  </p>
                 )}
                 <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                   <div className="h-full bg-primary rounded-full" style={{ width: `${(cls.enrolledStudents.length / cls.maxStudents) * 100}%` }} />

@@ -14,7 +14,7 @@ export default async function AdminStudentsPage() {
 
   await connectDB();
   const students = await User.find({ role: "student" })
-    .select("name email balance createdAt")
+    .select("name email balance status createdAt")
     .sort({ createdAt: -1 })
     .lean();
 
@@ -23,6 +23,7 @@ export default async function AdminStudentsPage() {
     name: u.name,
     email: u.email,
     balance: u.balance ?? 0,
+    status: u.status ?? "approved",
     createdAt: new Date(u.createdAt).toLocaleDateString(),
   }));
 

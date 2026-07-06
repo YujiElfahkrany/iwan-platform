@@ -22,6 +22,7 @@ export interface IClass {
   status: "open" | "full" | "completed" | "cancelled";
   totalSessions: number;
   curriculum: ICurriculumItem[];
+  daysOfWeek: string[];
 }
 
 const CurriculumItemSchema = new Schema<ICurriculumItem>(
@@ -49,6 +50,7 @@ const ClassSchema = new Schema<IClass>(
     status: { type: String, enum: ["open", "full", "completed", "cancelled"], default: "open" },
     totalSessions: { type: Number, default: 1 },
     curriculum: { type: [CurriculumItemSchema], default: [] },
+    daysOfWeek: { type: [String], default: [] },
   },
   { timestamps: true }
 );

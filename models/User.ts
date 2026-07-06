@@ -6,6 +6,7 @@ export interface IUser {
   email: string;
   passwordHash: string;
   role: "student" | "teacher" | "admin";
+  status: "pending" | "approved" | "rejected";
   balance: number;
   avatar?: string;
   phone?: string;
@@ -18,6 +19,7 @@ const UserSchema = new Schema<IUser>(
     email: { type: String, required: true, unique: true, lowercase: true },
     passwordHash: { type: String, required: true },
     role: { type: String, enum: ["student", "teacher", "admin"], required: true },
+    status: { type: String, enum: ["pending", "approved", "rejected"], default: "approved" },
     balance: { type: Number, default: 0 },
     avatar: { type: String },
     phone: { type: String },

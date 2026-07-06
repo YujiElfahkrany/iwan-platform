@@ -6,16 +6,17 @@ import { Footer } from "@/components/landing/Footer";
 import { Link } from "@/i18n/navigation";
 import { Users, Clock, BookOpen, Tag } from "lucide-react";
 import { getTranslations, getLocale } from "next-intl/server";
+import { auth } from "@/lib/auth";
 
 const SUBJECT_MAP: Record<string, string[]> = {
-  quran:   ["القرآن", "quran"],
-  tajweed: ["التجويد", "tajweed"],
-  fiqh:    ["الفقه", "fiqh"],
-  aqeedah: ["العقيدة", "aqeedah"],
-  seerah:  ["السيرة", "seerah"],
-  hadith:  ["الحديث", "hadith"],
-  arabic:  ["العربية", "arabic"],
-  tafseer: ["التفسير", "tafseer"],
+  quran:   ["قرآن", "quran"],
+  tajweed: ["تجويد", "tajweed"],
+  fiqh:    ["فقه", "fiqh"],
+  aqeedah: ["عقيدة", "aqeedah"],
+  seerah:  ["سيرة", "seerah"],
+  hadith:  ["حديث", "hadith"],
+  arabic:  ["عرب", "arabic"],
+  tafseer: ["تفسير", "tafseer"],
 };
 
 const SUBJECT_KEYS = ["quran", "tajweed", "fiqh", "aqeedah", "seerah", "hadith", "arabic", "tafseer"];
@@ -85,13 +86,15 @@ export default async function ClassesPage({
   const { subject } = await searchParams;
   const locale = await getLocale();
 
-  const [classes, t, ts] = await Promise.all([
+  const [classes, t, ts, session] = await Promise.all([
     getClasses(subject),
     getTranslations("browse"),
     getTranslations("subjects"),
+    auth(),
   ]);
 
   const subjectLabel = subject ? (ts as (k: string) => string)(subject) : null;
+  const bookHref = session?.user ? "/dashboard/student/classes" : "/auth/login";
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -211,11 +214,11 @@ export default async function ClassesPage({
                         </div>
 
                         <div className="flex items-center justify-between mt-4 pt-4 border-t border-[#f0ebe3]">
-                          <span className="font-bold text-[#c8973a] text-lg">
-                            {cls.price} LE
+                          <span className={cls.price === 0 ? "font-bold text-green-600 text-lg" : "font-bold text-[#c8973a] text-lg"}>
+                            {cls.price === 0 ? t("free_label") : `${cls.price} LE`}
                           </span>
                           <Link
-                            href={`/teachers/${cls.teacherId}`}
+                            href={bookHref}
                             className="text-sm font-semibold px-4 py-1.5 rounded-full bg-[#2c1f12] text-white hover:bg-[#3d2b18] transition-colors"
                           >
                             {t("book_now")}

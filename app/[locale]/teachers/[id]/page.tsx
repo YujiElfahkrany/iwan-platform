@@ -53,6 +53,7 @@ export default async function TeacherPublicPage({ params }: { params: Promise<{ 
             hourlyRate: profile.hourlyRate,
             rating: profile.rating,
             totalReviews: profile.totalReviews,
+            credentialImage: profile.credentialImage,
           }}
         />
         <BookSlotSection slots={slotsData} teacherId={id} teacherName={user.name} />

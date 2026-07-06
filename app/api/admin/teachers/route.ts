@@ -11,7 +11,7 @@ export async function GET() {
   }
   await connectDB();
   const teachers = await User.find({ role: "teacher" })
-    .select("name email createdAt")
+    .select("name email status createdAt")
     .sort({ createdAt: -1 })
     .lean();
 
@@ -28,6 +28,7 @@ export async function GET() {
         id: t._id.toString(),
         name: t.name,
         email: t.email,
+        status: t.status ?? "approved",
         subjects: profile?.subjects ?? [],
         hourlyRate: profile?.hourlyRate ?? null,
         createdAt: new Date(t.createdAt).toLocaleDateString(),

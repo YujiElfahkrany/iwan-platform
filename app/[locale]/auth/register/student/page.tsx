@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter, Link } from "@/i18n/navigation";
-import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,9 +17,9 @@ import PhoneInput from "react-phone-number-input";
 import arLabels from "react-phone-number-input/locale/ar.json";
 import "react-phone-number-input/style.css";
 import type { E164Number } from "libphonenumber-js/core";
+import { LANGUAGES } from "@/lib/constants";
 
 const TIMEZONES = ["UTC", "America/New_York", "America/Los_Angeles", "Europe/London", "Europe/Paris", "Asia/Dubai", "Asia/Riyadh", "Asia/Cairo", "Asia/Karachi"];
-const LANGUAGES = ["English", "Arabic", "French", "Spanish", "Urdu"];
 
 const AVATARS: { name: string; url: string; gender: "male" | "female" }[] = [
   ...[
@@ -147,8 +146,7 @@ export default function StudentRegisterPage() {
         const err = await res.json();
         throw new Error(err.error ?? "Registration failed");
       }
-      await signIn("credentials", { email: data.email, password: data.password, redirect: false });
-      router.push("/dashboard/student");
+      router.push("/auth/pending");
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Registration failed");
     } finally {

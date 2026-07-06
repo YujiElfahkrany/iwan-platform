@@ -34,6 +34,7 @@
     "register_now": "سجّل الآن"
   },
   "browse": {
+    "free_label": "مجاني",
     "all": "الكل",
     "teachers": "المعلمون",
     "teachers_of": "معلمو {subject}",
@@ -127,7 +128,13 @@
     "next": "التالي",
     "back": "السابق",
     "submit": "إنشاء الحساب",
-    "step": "الخطوة {current} من {total}"
+    "step": "الخطوة {current} من {total}",
+    "invalid_credentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+    "pending_approval_error": "حسابك لا يزال بانتظار موافقة الإدارة",
+    "account_rejected_error": "لم تتم الموافقة على تسجيل حسابك",
+    "pending_title": "تم إرسال طلب التسجيل",
+    "pending_message": "شكراً لتسجيلك! حسابك الآن قيد المراجعة من فريقنا. ستتمكن من تسجيل الدخول بمجرد الموافقة عليه.",
+    "back_home": "العودة إلى الرئيسية"
   },
   "student_form": {
     "step1_title": "بياناتك",
@@ -210,7 +217,8 @@
     "admin_students": "الطلاب",
     "admin_teachers": "المعلمون",
     "admin_classes": "الفصول",
-    "admin_topup": "طلبات شحن الرصيد"
+    "admin_topup": "طلبات شحن الرصيد",
+    "settings": "الإعدادات"
   },
   "topup": {
     "title": "شحن الرصيد",
@@ -300,7 +308,13 @@
     "added_toast": "تمت إضافة {n} جنيه إلى حساب {name}",
     "add_btn": "إضافة",
     "amount_placeholder": "المبلغ",
-    "confirm_delete": "حذف"
+    "confirm_delete": "حذف",
+    "status_pending": "قيد المراجعة",
+    "status_approved": "مقبول",
+    "status_rejected": "مرفوض",
+    "approved_success": "تمت الموافقة على الحساب",
+    "rejected_success": "تم رفض الحساب",
+    "approval_failed": "فشل تحديث حالة الموافقة"
   },
   "teacher": {
     "overview_title": "أهلاً بعودتك، {name}",
@@ -368,7 +382,38 @@
     "assignment_desc_placeholder": "ماذا يجب أن يقدم الطالب؟",
     "max_marks": "الدرجة القصوى",
     "sessions_count": "{n} جلسة",
-    "assignments_count": "واجبات"
+    "assignments_count": "واجبات",
+    "session_days": "أيام الجلسات",
+    "mark_free": "مجاني",
+    "free_label": "مجاني",
+    "day_saturday": "السبت",
+    "day_sunday": "الأحد",
+    "day_monday": "الاثنين",
+    "day_tuesday": "الثلاثاء",
+    "day_wednesday": "الأربعاء",
+    "day_thursday": "الخميس",
+    "day_friday": "الجمعة",
+    "view_credential": "عرض الشهادة"
+  },
+  "settings": {
+    "title": "إعدادات الملف الشخصي",
+    "name": "الاسم",
+    "change_photo": "تغيير الصورة",
+    "photo_too_large": "الصورة كبيرة جداً — الحد الأقصى 5 ميجابايت",
+    "bio": "نبذة تعريفية",
+    "subjects": "المواد",
+    "experience_years": "سنوات الخبرة",
+    "hourly_rate": "السعر بالساعة (جنيه)",
+    "qualifications": "المؤهلات",
+    "certifications": "الشهادات",
+    "languages": "اللغات",
+    "learning_level": "المستوى الدراسي",
+    "learning_history": "الخبرة التعليمية السابقة",
+    "goals": "الأهداف",
+    "tag_placeholder": "اكتب واضغط Enter",
+    "save": "حفظ التغييرات",
+    "saved": "تم تحديث الملف الشخصي بنجاح",
+    "save_failed": "فشل تحديث الملف الشخصي"
   },
   "assignments": {
     "page_title": "مراجعة الواجبات",

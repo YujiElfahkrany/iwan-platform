@@ -5,12 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
 import { DeleteButton } from "@/components/admin/DeleteButton";
+import { ApprovalActions } from "@/components/admin/ApprovalActions";
 import { useTranslations } from "next-intl";
 
 interface TeacherRow {
   id: string;
   name: string;
   email: string;
+  status: "pending" | "approved" | "rejected";
   subjects: string[];
   hourlyRate: number | null;
   createdAt: string;
@@ -33,6 +35,16 @@ export default function AdminTeachersPage() {
 
   useEffect(() => { fetchTeachers(); }, [fetchTeachers]);
 
+  function updateStatus(id: string, status: "approved" | "rejected") {
+    setTeachers((prev) => prev.map((t) => (t.id === id ? { ...t, status } : t)));
+  }
+
+  const statusBadge = (status: TeacherRow["status"]) => {
+    if (status === "pending") return <Badge className="bg-amber-100 text-amber-800 border-0">{t("status_pending")}</Badge>;
+    if (status === "rejected") return <Badge variant="destructive">{t("status_rejected")}</Badge>;
+    return <Badge className="bg-green-100 text-green-800 border-0">{t("status_approved")}</Badge>;
+  };
+
   return (
     <div className="space-y-6 max-w-5xl">
       <div className="flex items-center justify-between">
@@ -51,6 +63,7 @@ export default function AdminTeachersPage() {
                   <tr className="border-b text-muted-foreground">
                     <th className="text-start py-2 font-medium">{t("name")}</th>
                     <th className="text-start py-2 font-medium">{t("email")}</th>
+                    <th className="text-start py-2 font-medium">{t("status_col")}</th>
                     <th className="text-start py-2 font-medium">{t("subjects")}</th>
                     <th className="text-start py-2 font-medium">{t("rate")}</th>
                     <th className="text-start py-2 font-medium">{t("joined")}</th>
@@ -59,11 +72,12 @@ export default function AdminTeachersPage() {
                 </thead>
                 <tbody>
                   {teachers.length === 0 ? (
-                    <tr><td colSpan={6} className="py-8 text-center text-muted-foreground">{t("no_teachers")}</td></tr>
+                    <tr><td colSpan={7} className="py-8 text-center text-muted-foreground">{t("no_teachers")}</td></tr>
                   ) : teachers.map((teacher) => (
                     <tr key={teacher.id} className="border-b last:border-0 hover:bg-muted/30">
                       <td className="py-3 font-medium">{teacher.name}</td>
                       <td className="py-3 text-muted-foreground">{teacher.email}</td>
+                      <td className="py-3">{statusBadge(teacher.status)}</td>
                       <td className="py-3">
                         <div className="flex flex-wrap gap-1">
                           {teacher.subjects?.slice(0, 3).map((s: string) => (
@@ -75,7 +89,12 @@ export default function AdminTeachersPage() {
                       <td className="py-3">{teacher.hourlyRate ? `${teacher.hourlyRate} LE` : "—"}</td>
                       <td className="py-3 text-muted-foreground">{teacher.createdAt}</td>
                       <td className="py-3">
-                        <DeleteButton type="user" id={teacher.id} onDeleted={fetchTeachers} confirmLabel={t("confirm_delete")} />
+                        <div className="flex items-center gap-1.5">
+                          {teacher.status === "pending" && (
+                            <ApprovalActions id={teacher.id} onUpdated={(status) => updateStatus(teacher.id, status)} />
+                          )}
+                          <DeleteButton type="user" id={teacher.id} onDeleted={fetchTeachers} confirmLabel={t("confirm_delete")} />
+                        </div>
                       </td>
                     </tr>
                   ))}

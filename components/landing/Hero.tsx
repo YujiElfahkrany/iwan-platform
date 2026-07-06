@@ -69,7 +69,7 @@ export function Hero() {
                 <Image src="/student-login.png" alt="الطالب" width={180} height={240} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-200" unoptimized />
               </Link>
               <Link href={teacherHref} className="flex items-end justify-center h-44 sm:h-60 group">
-                <Image src="/teacher-login.png" alt="المعلم" width={180} height={240} className="w-full h-full object-contain translate-y-[20px] group-hover:scale-105 transition-transform duration-200" unoptimized />
+                <Image src="/teacher-login.png" alt="المعلم" width={180} height={240} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-200" unoptimized />
               </Link>
               {/* Primary buttons */}
               <div className="flex flex-col items-center gap-1.5">

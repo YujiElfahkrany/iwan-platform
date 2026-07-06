@@ -34,6 +34,7 @@
     "register_now": "Register Now"
   },
   "browse": {
+    "free_label": "Free",
     "all": "All",
     "teachers": "Teachers",
     "teachers_of": "{subject} Teachers",
@@ -127,7 +128,13 @@
     "next": "Next",
     "back": "Back",
     "submit": "Create Account",
-    "step": "Step {current} of {total}"
+    "step": "Step {current} of {total}",
+    "invalid_credentials": "Invalid email or password",
+    "pending_approval_error": "Your account is still awaiting admin approval",
+    "account_rejected_error": "Your account registration was not approved",
+    "pending_title": "Registration Submitted",
+    "pending_message": "Thanks for registering! Your account is now awaiting review by our team. You'll be able to log in once it's approved.",
+    "back_home": "Back to Home"
   },
   "student_form": {
     "step1_title": "Your Details",
@@ -210,7 +217,8 @@
     "admin_students": "Students",
     "admin_teachers": "Teachers",
     "admin_classes": "Classes",
-    "admin_topup": "Top-Up Requests"
+    "admin_topup": "Top-Up Requests",
+    "settings": "Settings"
   },
   "topup": {
     "title": "Top Up Balance",
@@ -300,7 +308,13 @@
     "added_toast": "Added {n} LE to {name}'s account",
     "add_btn": "Add",
     "amount_placeholder": "Amount",
-    "confirm_delete": "Delete"
+    "confirm_delete": "Delete",
+    "status_pending": "Pending",
+    "status_approved": "Approved",
+    "status_rejected": "Rejected",
+    "approved_success": "Account approved",
+    "rejected_success": "Account rejected",
+    "approval_failed": "Failed to update approval status"
   },
   "teacher": {
     "overview_title": "Welcome back, {name}",
@@ -368,7 +382,38 @@
     "assignment_desc_placeholder": "What should students submit?",
     "max_marks": "Max Marks",
     "sessions_count": "{n} sessions",
-    "assignments_count": "assignments"
+    "assignments_count": "assignments",
+    "session_days": "Session Days",
+    "mark_free": "Free",
+    "free_label": "Free",
+    "day_saturday": "Saturday",
+    "day_sunday": "Sunday",
+    "day_monday": "Monday",
+    "day_tuesday": "Tuesday",
+    "day_wednesday": "Wednesday",
+    "day_thursday": "Thursday",
+    "day_friday": "Friday",
+    "view_credential": "View Certificate"
+  },
+  "settings": {
+    "title": "Profile Settings",
+    "name": "Name",
+    "change_photo": "Change Photo",
+    "photo_too_large": "Image too large — max 5 MB",
+    "bio": "Bio",
+    "subjects": "Subjects",
+    "experience_years": "Years of Experience",
+    "hourly_rate": "Hourly Rate (LE)",
+    "qualifications": "Qualifications",
+    "certifications": "Certifications",
+    "languages": "Languages",
+    "learning_level": "Learning Level",
+    "learning_history": "Learning History",
+    "goals": "Goals",
+    "tag_placeholder": "Type and press Enter",
+    "save": "Save Changes",
+    "saved": "Profile updated successfully",
+    "save_failed": "Failed to update profile"
   },
   "assignments": {
     "page_title": "Assignment Reviews",

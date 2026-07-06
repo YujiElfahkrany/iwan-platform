@@ -79,6 +79,7 @@ export default async function TeacherOverviewPage() {
               hourlyRate: profile.hourlyRate,
               rating: profile.rating,
               totalReviews: profile.totalReviews,
+              credentialImage: profile.credentialImage,
             }}
           />
         </div>

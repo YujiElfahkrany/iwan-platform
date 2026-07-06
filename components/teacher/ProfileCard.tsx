@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Star, Globe, Award, Clock } from "lucide-react";
+import { Star, Globe, Award, Clock, FileText } from "lucide-react";
 
 interface Profile {
   subjects: string[];
@@ -16,6 +16,7 @@ interface Profile {
   hourlyRate: number;
   rating: number;
   totalReviews: number;
+  credentialImage?: string;
 }
 
 interface TeacherProfileCardProps {
@@ -53,7 +54,7 @@ export function TeacherProfileCard({ name, avatar, profile }: TeacherProfileCard
           </div>
 
           {/* Details */}
-          <div className="flex-1 space-y-4">
+          <div className="flex-1 min-w-0 space-y-4">
             {profile.bio && (
               <p className="text-sm text-muted-foreground leading-relaxed">{profile.bio}</p>
             )}
@@ -63,7 +64,7 @@ export function TeacherProfileCard({ name, avatar, profile }: TeacherProfileCard
                 <p className="text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">{t("subjects_label")}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {profile.subjects.map((s) => (
-                    <Badge key={s} variant="secondary" className="text-xs">{s}</Badge>
+                    <Badge key={s} variant="secondary" className="text-xs h-auto max-w-full whitespace-normal break-words py-1">{s}</Badge>
                   ))}
                 </div>
               </div>
@@ -91,7 +92,7 @@ export function TeacherProfileCard({ name, avatar, profile }: TeacherProfileCard
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   {profile.qualifications.map((q) => (
-                    <Badge key={q} variant="outline" className="text-xs">{q}</Badge>
+                    <Badge key={q} variant="outline" className="text-xs h-auto max-w-full whitespace-normal break-words py-1">{q}</Badge>
                   ))}
                 </div>
               </div>
@@ -102,10 +103,21 @@ export function TeacherProfileCard({ name, avatar, profile }: TeacherProfileCard
                 <p className="text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">{t("certifications")}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {profile.certifications.map((c) => (
-                    <Badge key={c} className="text-xs bg-[#c8973a]/15 text-[#8a6420] hover:bg-[#c8973a]/20 border-0">{c}</Badge>
+                    <Badge key={c} className="text-xs h-auto max-w-full whitespace-normal break-words py-1 bg-[#c8973a]/15 text-[#8a6420] hover:bg-[#c8973a]/20 border-0">{c}</Badge>
                   ))}
                 </div>
               </div>
+            )}
+
+            {profile.credentialImage && (
+              <a
+                href={profile.credentialImage}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+              >
+                <FileText className="h-4 w-4" />{t("view_credential")}
+              </a>
             )}
           </div>
         </div>

@@ -38,7 +38,13 @@ export default function LoginPage() {
     });
     setLoading(false);
     if (result?.error) {
-      toast.error("Invalid email or password");
+      if (result.code === "pending_approval") {
+        toast.error(t("pending_approval_error"));
+      } else if (result.code === "account_rejected") {
+        toast.error(t("account_rejected_error"));
+      } else {
+        toast.error(t("invalid_credentials"));
+      }
     } else {
       const res = await fetch("/api/auth/session");
       const session = await res.json();

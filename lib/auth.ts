@@ -1,8 +1,16 @@
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { connectDB } from "@/lib/mongodb";
 import { User } from "@/models/User";
+
+class PendingApprovalError extends CredentialsSignin {
+  code = "pending_approval";
+}
+
+class AccountRejectedError extends CredentialsSignin {
+  code = "account_rejected";
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
@@ -22,6 +30,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!user) return null;
         const valid = await bcrypt.compare(credentials.password as string, user.passwordHash);
         if (!valid) return null;
+        if (user.status === "pending") throw new PendingApprovalError();
+        if (user.status === "rejected") throw new AccountRejectedError();
         return {
           id: user._id.toString(),
           email: user.email,
@@ -33,10 +43,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    jwt({ token, user }) {
+    jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
         token.role = (user as { role?: string }).role;
+      }
+      if (trigger === "update" && session) {
+        if (typeof session.name === "string") token.name = session.name;
+        if (typeof session.image === "string") token.picture = session.image;
       }
       return token;
     },

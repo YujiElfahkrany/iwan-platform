@@ -19,6 +19,7 @@ import {
   Home,
   ClipboardList,
   TrendingUp,
+  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -127,6 +128,7 @@ export function DashboardSidebar({ role, userName, balance }: DashboardSidebarPr
     { href: `/dashboard/teacher/classes`, label: t("my_classes"), icon: <BookOpen className="h-4 w-4" /> },
     { href: `/dashboard/teacher/assignments`, label: t("assignments"), icon: <ClipboardList className="h-4 w-4" /> },
     { href: `/dashboard/teacher/bookings`, label: t("my_bookings"), icon: <Star className="h-4 w-4" /> },
+    { href: `/dashboard/teacher/settings`, label: t("settings"), icon: <Settings className="h-4 w-4" /> },
   ];
 
   const studentLinks: NavItem[] = [
@@ -135,6 +137,7 @@ export function DashboardSidebar({ role, userName, balance }: DashboardSidebarPr
     { href: `/dashboard/student/classes`, label: t("browse_classes"), icon: <GraduationCap className="h-4 w-4" /> },
     { href: `/dashboard/student/progress`, label: t("my_progress"), icon: <TrendingUp className="h-4 w-4" /> },
     { href: `/dashboard/student/bookings`, label: t("my_bookings"), icon: <BookOpen className="h-4 w-4" /> },
+    { href: `/dashboard/student/settings`, label: t("settings"), icon: <Settings className="h-4 w-4" /> },
   ];
 
   const adminLinks: NavItem[] = [
