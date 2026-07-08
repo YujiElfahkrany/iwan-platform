@@ -2,9 +2,15 @@ import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/mongodb";
 import { Booking } from "@/models/Booking";
 import { TeacherProfile } from "@/models/TeacherProfile";
+import { Class } from "@/models/Class";
+import { Slot } from "@/models/Slot";
+import { User } from "@/models/User";
+import { sessionJoinInfo } from "@/lib/schedule";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CalendarDays, Star, Clock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Link } from "@/i18n/navigation";
+import { CalendarDays, Star, Clock, Wallet, Video } from "lucide-react";
 import { format } from "date-fns";
 import { TeacherProfileCard } from "@/components/teacher/ProfileCard";
 import { getTranslations } from "next-intl/server";
@@ -15,13 +21,35 @@ export default async function TeacherOverviewPage() {
   const t = await getTranslations("teacher");
 
   await connectDB();
-  const [bookings, profile] = await Promise.all([
+  const [bookings, profile, completedClasses] = await Promise.all([
     Booking.find({ teacherId: session.user.id, status: "confirmed" })
       .sort({ createdAt: -1 })
       .limit(5)
       .lean(),
     TeacherProfile.findOne({ userId: session.user.id }).lean(),
+    Class.find(
+      { teacherId: session.user.id, status: "completed" },
+      { price: 1, enrolledStudents: 1 }
+    ).lean(),
   ]);
+
+  const earnings = completedClasses.reduce(
+    (sum, c) => sum + c.price * c.enrolledStudents.length,
+    0
+  );
+
+  const slotIds = bookings.filter((b) => b.slotId).map((b) => b.slotId!.toString());
+  const classIds = bookings.filter((b) => b.classId).map((b) => b.classId!.toString());
+  const studentIds = [...new Set(bookings.map((b) => b.studentId.toString()))];
+  const [slots, classDocs, students] = await Promise.all([
+    Slot.find({ _id: { $in: slotIds } }).lean(),
+    Class.find({ _id: { $in: classIds } }, { startTime: 1, endTime: 1, daysOfWeek: 1, title: 1 }).lean(),
+    User.find({ _id: { $in: studentIds } }, { name: 1 }).lean(),
+  ]);
+  const slotMap = Object.fromEntries(slots.map((s) => [s._id.toString(), s]));
+  const classMap = Object.fromEntries(classDocs.map((c) => [c._id.toString(), c]));
+  const studentMap = Object.fromEntries(students.map((s) => [s._id.toString(), s.name]));
+  const now = new Date();
 
   const statusLabel = (s: string) => {
     if (s === "confirmed") return t("status_confirmed");
@@ -34,7 +62,7 @@ export default async function TeacherOverviewPage() {
       <h1 className="text-2xl font-bold">{t("overview_title", { name: session.user.name ?? "" })}</h1>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex-row items-center gap-3 pb-2">
             <div className="p-2 rounded-lg bg-primary/10"><CalendarDays className="h-4 w-4 text-primary" /></div>
@@ -58,6 +86,15 @@ export default async function TeacherOverviewPage() {
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold text-[#c8973a]">${profile?.hourlyRate ?? 0}/hr</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex-row items-center gap-3 pb-2">
+            <div className="p-2 rounded-lg bg-[#c8973a]/10"><Wallet className="h-4 w-4 text-[#c8973a]" /></div>
+            <CardTitle className="text-sm font-medium text-muted-foreground">{t("earnings_held")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold text-[#c8973a]">{earnings} LE</p>
           </CardContent>
         </Card>
       </div>
@@ -92,20 +129,46 @@ export default async function TeacherOverviewPage() {
           <Card><CardContent className="py-8 text-center text-muted-foreground">{t("no_bookings")}</CardContent></Card>
         ) : (
           <div className="space-y-2">
-            {bookings.map((b) => (
-              <Card key={b._id.toString()}>
-                <CardContent className="flex items-center justify-between py-3 px-4">
-                  <div className="flex items-center gap-3">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium">#{b._id.toString().slice(-6)}</p>
-                      <p className="text-xs text-muted-foreground">{format(new Date(b.createdAt), "PPP")}</p>
+            {bookings.map((b) => {
+              const slot = b.slotId ? slotMap[b.slotId.toString()] : null;
+              const cls = b.classId ? classMap[b.classId.toString()] : null;
+              const { sessionTime, canJoin } = sessionJoinInfo(slot, cls, now);
+
+              return (
+                <Card key={b._id.toString()}>
+                  <CardContent className="flex items-center justify-between py-3 px-4">
+                    <div className="flex items-center gap-3">
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-medium">{studentMap[b.studentId.toString()] ?? "—"}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {cls ? cls.title : t("one_on_one")}
+                          {sessionTime
+                            ? ` · ${format(sessionTime, "PPp")}`
+                            : ` · ${format(new Date(b.createdAt), "PPP")}`}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <Badge variant={b.status === "confirmed" ? "default" : "secondary"}>{statusLabel(b.status)}</Badge>
-                </CardContent>
-              </Card>
-            ))}
+                    <div className="flex items-center gap-2">
+                      <Badge variant={b.status === "confirmed" ? "default" : "secondary"}>{statusLabel(b.status)}</Badge>
+                      {b.status === "confirmed" && (
+                        canJoin ? (
+                          <Button size="sm" asChild>
+                            <Link href={`/session/${b._id}`}>
+                              <Video className="h-3.5 w-3.5 me-1.5" />{t("join")}
+                            </Link>
+                          </Button>
+                        ) : (
+                          <Button size="sm" disabled>
+                            <Video className="h-3.5 w-3.5 me-1.5" />{t("join")}
+                          </Button>
+                        )
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         )}
       </div>

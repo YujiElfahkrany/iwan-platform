@@ -51,7 +51,7 @@ export default function TeacherAssignmentsPage() {
   const fetchSubmissions = useCallback(async () => {
     setLoading(true);
     try {
-      const classesRes = await fetch("/api/classes");
+      const classesRes = await fetch("/api/classes?mine=true");
       const classes: ClassItem[] = await classesRes.json();
 
       const allGroups: ClassGroup[] = [];

@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Loader2, Plus, Users, Clock, Trash2, BookOpen, ChevronRight, ChevronLeft } from "lucide-react";
+import { Loader2, Plus, Users, Clock, Trash2, BookOpen, ChevronRight, ChevronLeft, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -26,7 +26,8 @@ interface ClassItem {
   enrolledStudents: string[];
   status: string;
   totalSessions: number;
-  curriculum: { sessionNumber: number; assignmentTitle: string; maxMarks: number }[];
+  description?: string;
+  curriculum: { sessionNumber: number; assignmentTitle: string; description?: string; maxMarks: number }[];
   daysOfWeek?: string[];
 }
 
@@ -64,17 +65,36 @@ export default function TeacherClassesPage() {
   const [curriculum, setCurriculum] = useState<CurriculumRow[]>([]);
   const [isFree, setIsFree] = useState(false);
   const [subjectsList, setSubjectsList] = useState<string[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const fetchClasses = useCallback(async () => {
     setLoading(true);
-    const res = await fetch("/api/classes");
+    const res = await fetch("/api/classes?mine=true");
     setClasses(await res.json());
     setLoading(false);
   }, []);
 
   useEffect(() => { fetchClasses(); }, [fetchClasses]);
   useEffect(() => {
-    fetch("/api/subjects").then((r) => r.json()).then(setSubjectsList).catch(() => {});
+    let cancelled = false;
+    async function loadSubjects() {
+      try {
+        const res = await fetch("/api/profile");
+        if (res.ok) {
+          const profile = await res.json();
+          if (Array.isArray(profile?.subjects) && profile.subjects.length > 0) {
+            if (!cancelled) setSubjectsList(profile.subjects);
+            return;
+          }
+        }
+      } catch {}
+      try {
+        const all = await fetch("/api/subjects").then((r) => r.json());
+        if (!cancelled) setSubjectsList(all);
+      } catch {}
+    }
+    loadSubjects();
+    return () => { cancelled = true; };
   }, []);
 
   function update(k: string, v: string | number | string[]) {
@@ -117,6 +137,36 @@ export default function TeacherClassesPage() {
     setTotalSessions(1);
     setCurriculum([]);
     setIsFree(false);
+    setEditingId(null);
+  }
+
+  function openEdit(cls: ClassItem) {
+    const start = new Date(cls.startTime);
+    const end = new Date(cls.endTime);
+    setForm({
+      title: cls.title,
+      subject: cls.subject,
+      description: cls.description ?? "",
+      date: format(start, "yyyy-MM-dd"),
+      startTime: format(start, "HH:mm"),
+      endTime: format(end, "HH:mm"),
+      price: cls.price,
+      maxStudents: cls.maxStudents,
+      daysOfWeek: cls.daysOfWeek ?? [],
+    });
+    setTotalSessions(cls.totalSessions || 1);
+    setCurriculum(
+      (cls.curriculum ?? []).map((c) => ({
+        sessionNumber: c.sessionNumber,
+        assignmentTitle: c.assignmentTitle,
+        description: c.description ?? "",
+        maxMarks: c.maxMarks,
+      }))
+    );
+    setIsFree(cls.price === 0);
+    setEditingId(cls._id);
+    setStep(1);
+    setOpen(true);
   }
 
   function handleOpenChange(val: boolean) {
@@ -124,14 +174,14 @@ export default function TeacherClassesPage() {
     if (!val) resetWizard();
   }
 
-  async function createClass(e: React.FormEvent) {
+  async function saveClass(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
     try {
       const startTime = new Date(`${form.date}T${form.startTime}`).toISOString();
       const endTime = new Date(`${form.date}T${form.endTime}`).toISOString();
-      const res = await fetch("/api/classes", {
-        method: "POST",
+      const res = await fetch(editingId ? `/api/classes/${editingId}` : "/api/classes", {
+        method: editingId ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
@@ -142,11 +192,16 @@ export default function TeacherClassesPage() {
         }),
       });
       if (!res.ok) throw new Error();
-      toast.success(t("class_created"));
+      if (editingId) {
+        const data = await res.json();
+        toast.success(data.notified > 0 ? t("class_updated_notified", { n: data.notified }) : t("class_updated"));
+      } else {
+        toast.success(t("class_created"));
+      }
       handleOpenChange(false);
       fetchClasses();
     } catch {
-      toast.error(t("failed_create"));
+      toast.error(editingId ? t("failed_update") : t("failed_create"));
     } finally {
       setSaving(false);
     }
@@ -169,7 +224,7 @@ export default function TeacherClassesPage() {
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>{t("create_class_title")}</DialogTitle>
+              <DialogTitle>{editingId ? t("edit_class_title") : t("create_class_title")}</DialogTitle>
               <div className="flex items-center gap-2 mt-2">
                 {[1, 2].map((s) => (
                   <div key={s} className="flex items-center gap-2">
@@ -192,6 +247,9 @@ export default function TeacherClassesPage() {
                     <Select value={form.subject} onValueChange={(v) => update("subject", v ?? "")}>
                       <SelectTrigger className="w-full"><SelectValue placeholder={t("subject_field")} /></SelectTrigger>
                       <SelectContent>
+                        {form.subject && !subjectsList.includes(form.subject) && (
+                          <SelectItem value={form.subject}>{form.subject}</SelectItem>
+                        )}
                         {subjectsList.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                       </SelectContent>
                     </Select>
@@ -247,7 +305,7 @@ export default function TeacherClassesPage() {
             )}
 
             {step === 2 && (
-              <form onSubmit={createClass} className="space-y-5 mt-2">
+              <form onSubmit={saveClass} className="space-y-5 mt-2">
                 <div className="space-y-1">
                   <Label>{t("total_sessions")}</Label>
                   <Input
@@ -330,7 +388,7 @@ export default function TeacherClassesPage() {
                     <ChevronLeft className="h-4 w-4 me-1" />{t("back")}
                   </Button>
                   <Button type="submit" disabled={saving} className="flex-1">
-                    {saving && <Loader2 className="h-4 w-4 animate-spin me-2" />}{t("create_class_btn")}
+                    {saving && <Loader2 className="h-4 w-4 animate-spin me-2" />}{editingId ? t("update_class_btn") : t("create_class_btn")}
                   </Button>
                 </div>
               </form>
@@ -351,7 +409,12 @@ export default function TeacherClassesPage() {
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between">
                   <CardTitle className="text-base">{cls.title}</CardTitle>
-                  <Badge variant={cls.status === "open" ? "default" : "secondary"}>{statusLabel(cls.status)}</Badge>
+                  <div className="flex items-center gap-1">
+                    <Badge variant={cls.status === "open" ? "default" : "secondary"}>{statusLabel(cls.status)}</Badge>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(cls)} aria-label={t("edit_class_title")}>
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
                 </div>
                 <Badge variant="outline" className="w-fit">{cls.subject}</Badge>
               </CardHeader>

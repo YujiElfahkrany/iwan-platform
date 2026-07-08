@@ -7,6 +7,7 @@ import { Slot } from "@/models/Slot";
 import { Class } from "@/models/Class";
 import { User } from "@/models/User";
 import { generateRoomName } from "@/lib/jitsi";
+import { studentClassPrice } from "@/lib/pricing";
 
 export async function GET(_req: NextRequest) {
   try {
@@ -45,6 +46,7 @@ export async function POST(req: NextRequest) {
 
     let meetingRoomName = generateRoomName("session");
     let resolvedTeacherId = teacherId;
+    let classCost: number | null = null;
 
     if (type === "1on1" && slotId) {
       const slot = await Slot.findById(slotId);
@@ -62,11 +64,13 @@ export async function POST(req: NextRequest) {
       }
       meetingRoomName = cls.meetingRoomName;
       resolvedTeacherId = cls.teacherId.toString();
+      classCost = studentClassPrice(cls.price);
     }
 
     // Credits-based payment
     if (useCredits) {
-      const cost = Number(price) || 0;
+      // For classes the cost is computed server-side (teacher rate + commission)
+      const cost = classCost ?? (Number(price) || 0);
       const student = await User.findById(session.user.id);
       if (!student) return NextResponse.json({ error: "User not found" }, { status: 404 });
       if (student.balance < cost) {

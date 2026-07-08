@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
       user.resetTokenExpiry = new Date(Date.now() + TOKEN_TTL_MS);
       await user.save();
 
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+      const appUrl = req.nextUrl.origin;
       const lang = locale === "en" ? "en" : "ar";
       const resetUrl = `${appUrl}/${lang}/auth/reset-password?token=${token}`;
 

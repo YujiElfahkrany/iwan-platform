@@ -7,6 +7,30 @@ import { StudentProfile } from "@/models/StudentProfile";
 
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
 
+export async function GET() {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    await connectDB();
+
+    if (session.user.role === "teacher") {
+      const profile = await TeacherProfile.findOne({ userId: session.user.id }).lean();
+      return NextResponse.json(profile ?? {});
+    }
+    if (session.user.role === "student") {
+      const profile = await StudentProfile.findOne({ userId: session.user.id }).lean();
+      return NextResponse.json(profile ?? {});
+    }
+    return NextResponse.json({});
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
 export async function PATCH(req: NextRequest) {
   try {
     const session = await auth();

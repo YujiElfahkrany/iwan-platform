@@ -3,6 +3,8 @@ import { connectDB } from "@/lib/mongodb";
 import { Booking } from "@/models/Booking";
 import { User } from "@/models/User";
 import { Slot } from "@/models/Slot";
+import { Class } from "@/models/Class";
+import { sessionJoinInfo } from "@/lib/schedule";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,6 +31,10 @@ export default async function StudentBookingsPage() {
   const slots = await Slot.find({ _id: { $in: slotIds } }).lean();
   const slotMap = Object.fromEntries(slots.map((s) => [s._id.toString(), s]));
 
+  const classIds = bookings.filter((b) => b.classId).map((b) => b.classId!.toString());
+  const classDocs = await Class.find({ _id: { $in: classIds } }, { startTime: 1, endTime: 1, daysOfWeek: 1 }).lean();
+  const classMap = Object.fromEntries(classDocs.map((c) => [c._id.toString(), c]));
+
   const now = new Date();
 
   const statusLabel = (s: string) => {
@@ -52,10 +58,9 @@ export default async function StudentBookingsPage() {
         <div className="space-y-3">
           {bookings.map((b) => {
             const slot = b.slotId ? slotMap[b.slotId.toString()] : null;
-            const sessionTime = slot ? new Date(slot.startTime) : null;
-            const canJoin = b.status === "confirmed" && sessionTime
-              ? Math.abs(now.getTime() - sessionTime.getTime()) < 10 * 60 * 1000
-              : false;
+            const cls = b.classId ? classMap[b.classId.toString()] : null;
+            const { sessionTime, canJoin: joinable } = sessionJoinInfo(slot, cls, now);
+            const canJoin = b.status === "confirmed" && joinable;
 
             return (
               <Card key={b._id.toString()} className="hover:shadow-sm transition-shadow">

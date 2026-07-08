@@ -1,6 +1,9 @@
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/mongodb";
 import { Booking } from "@/models/Booking";
+import { Class } from "@/models/Class";
+import { Slot } from "@/models/Slot";
+import { sessionJoinInfo } from "@/lib/schedule";
 import { StudentProfile } from "@/models/StudentProfile";
 import { User } from "@/models/User";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +30,16 @@ export default async function StudentOverviewPage() {
   ]);
 
   const balance = userDoc?.balance ?? 0;
+
+  const classIds = [...new Set(bookings.filter((b) => b.classId).map((b) => b.classId!.toString()))];
+  const classDocs = await Class.find({ _id: { $in: classIds } }, { title: 1, startTime: 1, endTime: 1, daysOfWeek: 1 }).lean();
+  const classMap = Object.fromEntries(classDocs.map((c) => [c._id.toString(), c]));
+
+  const slotIds = bookings.filter((b) => b.slotId).map((b) => b.slotId!.toString());
+  const slots = await Slot.find({ _id: { $in: slotIds } }).lean();
+  const slotMap = Object.fromEntries(slots.map((s) => [s._id.toString(), s]));
+
+  const now = new Date();
 
   return (
     <div className="space-y-6 max-w-5xl">
@@ -100,24 +113,37 @@ export default async function StudentOverviewPage() {
           </CardContent></Card>
         ) : (
           <div className="space-y-2">
-            {bookings.map((b) => (
-              <Card key={b._id.toString()}>
-                <CardContent className="flex items-center justify-between py-3 px-4">
-                  <div className="flex items-center gap-3">
-                    <Video className="h-4 w-4 text-primary" />
-                    <div>
-                      <p className="font-medium text-sm">{b.type === "1on1" ? t("one_on_one") : t("group_class")}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {t("booking_ref", { id: b._id.toString().slice(-6) })} · {format(new Date(b.createdAt), "PPP")}
-                      </p>
+            {bookings.map((b) => {
+              const slot = b.slotId ? slotMap[b.slotId.toString()] : null;
+              const cls = b.classId ? classMap[b.classId.toString()] : null;
+              const { sessionTime, canJoin: joinable } = sessionJoinInfo(slot, cls, now);
+              const canJoin = b.status === "confirmed" && joinable;
+
+              return (
+                <Card key={b._id.toString()}>
+                  <CardContent className="flex items-center justify-between py-3 px-4">
+                    <div className="flex items-center gap-3">
+                      <Video className="h-4 w-4 text-primary" />
+                      <div>
+                        <p className="font-medium text-sm">{b.type === "1on1" ? t("one_on_one") : t("group_class")}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {(b.classId && classMap[b.classId.toString()]?.title) ?? t("booking_ref", { id: b._id.toString().slice(-6) })} · {sessionTime ? format(sessionTime, "PPp") : format(new Date(b.createdAt), "PPP")}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <Button size="sm" asChild>
-                    <Link href={`/session/${b._id}`}><Video className="h-3.5 w-3.5 me-1.5" />{t("join")}</Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+                    {canJoin ? (
+                      <Button size="sm" asChild>
+                        <Link href={`/session/${b._id}`}><Video className="h-3.5 w-3.5 me-1.5" />{t("join")}</Link>
+                      </Button>
+                    ) : (
+                      <Button size="sm" disabled className="opacity-50">
+                        <Video className="h-3.5 w-3.5 me-1.5" />{t("join")}
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         )}
       </div>

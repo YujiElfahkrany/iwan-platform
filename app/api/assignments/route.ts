@@ -3,6 +3,8 @@ import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/mongodb";
 import { AssignmentSubmission } from "@/models/AssignmentSubmission";
 import { Class } from "@/models/Class";
+import { User } from "@/models/User";
+import { sendEmail } from "@/lib/email";
 
 const MAX_BYTES = 5 * 1024 * 1024;
 
@@ -51,6 +53,37 @@ export async function POST(req: NextRequest) {
     fileData,
     fileName: file.name,
   });
+
+  const [teacher, student] = await Promise.all([
+    User.findById(cls.teacherId, { email: 1, name: 1 }).lean(),
+    User.findById(session.user.id, { name: 1 }).lean(),
+  ]);
+  if (teacher) {
+    const studentName = student?.name ?? "";
+    try {
+      await sendEmail({
+        to: teacher.email,
+        subject: `تسليم واجب جديد | New Assignment Submission — ${assignment.assignmentTitle}`,
+        html: `
+          <div dir="rtl">
+            <h2>تسليم واجب جديد</h2>
+            <p>مرحباً ${teacher.name}،</p>
+            <p>قام الطالب <strong>${studentName}</strong> بتسليم واجب «${assignment.assignmentTitle}» (بعد الجلسة ${sessionNumber}) في فصل «${cls.title}».</p>
+            <p>سجّل الدخول إلى لوحة التحكم لمراجعة التسليم وتقييمه.</p>
+          </div>
+          <hr />
+          <div dir="ltr">
+            <h2>New assignment submission</h2>
+            <p>Hi ${teacher.name},</p>
+            <p>Student <strong>${studentName}</strong> submitted "${assignment.assignmentTitle}" (after session ${sessionNumber}) in the class "${cls.title}".</p>
+            <p>Log in to your dashboard to review and grade the submission.</p>
+          </div>
+        `,
+      });
+    } catch (emailErr) {
+      console.error("Failed to send submission notification email:", emailErr);
+    }
+  }
 
   return NextResponse.json({ id: submission._id.toString() }, { status: 201 });
 }

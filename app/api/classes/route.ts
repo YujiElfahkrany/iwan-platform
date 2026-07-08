@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/mongodb";
 import { Class } from "@/models/Class";
 import { generateRoomName } from "@/lib/jitsi";
+import { studentClassPrice } from "@/lib/pricing";
 
 export async function GET(req: NextRequest) {
   try {
@@ -12,9 +13,28 @@ export async function GET(req: NextRequest) {
     const teacherId = searchParams.get("teacherId");
     const subject = searchParams.get("subject");
     const enrolled = searchParams.get("enrolled");
+    const mine = searchParams.get("mine");
     const filter: Record<string, unknown> = {};
     if (teacherId) filter.teacherId = teacherId;
     if (subject) filter.subject = subject;
+
+    // Teacher's own classes: no startTime cutoff, so past/today classes remain visible
+    if (mine === "true") {
+      const session = await auth();
+      if (!session?.user || session.user.role !== "teacher") {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+      const classes = await Class.find({ teacherId: session.user.id }).sort({ startTime: -1 }).lean();
+      return NextResponse.json(
+        classes.map((c) => ({
+          ...c,
+          _id: c._id.toString(),
+          teacherId: c.teacherId.toString(),
+          enrolledStudents: c.enrolledStudents.map((id: { toString: () => string }) => id.toString()),
+          studentPrice: studentClassPrice(c.price),
+        }))
+      );
+    }
 
     if (enrolled === "true") {
       const session = await auth();
@@ -30,11 +50,13 @@ export async function GET(req: NextRequest) {
           _id: c._id.toString(),
           teacherId: c.teacherId.toString(),
           enrolledStudents: c.enrolledStudents.map((id: { toString: () => string }) => id.toString()),
+          studentPrice: studentClassPrice(c.price),
         }))
       );
     }
 
-    const classes = await Class.find({ ...filter, startTime: { $gte: new Date() } })
+    // Visibility is status-based: recurring courses stay listed after their first session starts
+    const classes = await Class.find({ ...filter, status: { $in: ["open", "full"] } })
       .sort({ startTime: 1 })
       .lean();
     return NextResponse.json(
@@ -43,6 +65,7 @@ export async function GET(req: NextRequest) {
         _id: c._id.toString(),
         teacherId: c.teacherId.toString(),
         enrolledStudents: c.enrolledStudents.map((id: { toString: () => string }) => id.toString()),
+        studentPrice: studentClassPrice(c.price),
       }))
     );
   } catch (err) {

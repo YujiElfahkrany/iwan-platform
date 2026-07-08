@@ -23,6 +23,7 @@ export interface IClass {
   totalSessions: number;
   curriculum: ICurriculumItem[];
   daysOfWeek: string[];
+  reminderSentAt?: Date;
 }
 
 const CurriculumItemSchema = new Schema<ICurriculumItem>(
@@ -51,6 +52,7 @@ const ClassSchema = new Schema<IClass>(
     totalSessions: { type: Number, default: 1 },
     curriculum: { type: [CurriculumItemSchema], default: [] },
     daysOfWeek: { type: [String], default: [] },
+    reminderSentAt: { type: Date },
   },
   { timestamps: true }
 );

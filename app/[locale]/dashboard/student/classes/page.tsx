@@ -20,6 +20,7 @@ interface ClassItem {
   startTime: string;
   endTime: string;
   price: number;
+  studentPrice: number;
   maxStudents: number;
   enrolledStudents: string[];
   status: string;
@@ -58,12 +59,11 @@ export default function BrowseClassesPage() {
           classId: cls._id,
           teacherId: cls.teacherId,
           useCredits: true,
-          price: cls.price,
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Enrollment failed");
-      toast.success(`${cls.price} LE deducted from your balance.`);
+      toast.success(`${cls.studentPrice} LE deducted from your balance.`);
       router.push("/dashboard/student/bookings");
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Enrollment failed");
@@ -103,7 +103,7 @@ export default function BrowseClassesPage() {
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between gap-2">
                     <CardTitle className="text-base leading-tight">{cls.title}</CardTitle>
-                    <p className="text-primary font-bold shrink-0">{cls.price} LE</p>
+                    <p className="text-primary font-bold shrink-0">{cls.studentPrice} LE</p>
                   </div>
                   <Badge variant="outline" className="w-fit">{cls.subject}</Badge>
                 </CardHeader>

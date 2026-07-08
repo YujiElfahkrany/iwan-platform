@@ -7,6 +7,7 @@ import { Footer } from "@/components/landing/Footer";
 import { Link } from "@/i18n/navigation";
 import { Star, BookOpen, Clock, Users, Tag } from "lucide-react";
 import { getTranslations, getLocale } from "next-intl/server";
+import { studentClassPrice } from "@/lib/pricing";
 
 const SUBJECT_MAP: Record<string, string[]> = {
   quran:   ["القرآن", "quran"],
@@ -56,7 +57,6 @@ async function getClasses(subject?: string) {
     await connectDB();
     const filter: Record<string, unknown> = {
       status: "open",
-      startTime: { $gte: new Date() },
     };
     if (subject) filter.subject = { $regex: buildRegex(subject) };
 
@@ -74,7 +74,7 @@ async function getClasses(subject?: string) {
       subject: c.subject,
       startTime: c.startTime.toISOString(),
       endTime: c.endTime.toISOString(),
-      price: c.price,
+      price: studentClassPrice(c.price),
       maxStudents: c.maxStudents,
       enrolledCount: c.enrolledStudents.length,
       totalSessions: c.totalSessions ?? 0,
