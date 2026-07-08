@@ -4,7 +4,7 @@ import { connectDB } from "@/lib/mongodb";
 import { User } from "@/models/User";
 import { TeacherProfile } from "@/models/TeacherProfile";
 import { StudentProfile } from "@/models/StudentProfile";
-import { resend, FROM_EMAIL } from "@/lib/resend";
+import { sendEmail } from "@/lib/email";
 
 const ADMIN_NOTIFICATION_EMAIL = "vizwrks@gmail.com";
 
@@ -34,8 +34,7 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-      await resend.emails.send({
-        from: FROM_EMAIL,
+      await sendEmail({
         to: ADMIN_NOTIFICATION_EMAIL,
         subject: `New ${role} registration awaiting approval — ${name}`,
         html: `

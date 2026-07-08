@@ -3,7 +3,7 @@ import { connectDB } from "@/lib/mongodb";
 import { Booking } from "@/models/Booking";
 import { Slot } from "@/models/Slot";
 import { User } from "@/models/User";
-import { resend, FROM_EMAIL } from "@/lib/resend";
+import { sendEmail } from "@/lib/email";
 
 // Vercel Cron: runs daily at 08:00 UTC
 export async function GET(req: NextRequest) {
@@ -49,8 +49,8 @@ export async function GET(req: NextRequest) {
     `;
 
     await Promise.allSettled([
-      resend.emails.send({ from: FROM_EMAIL, to: student.email, subject: "Session Reminder — Iwan Academy", html }),
-      resend.emails.send({ from: FROM_EMAIL, to: teacher.email, subject: "Session Reminder — Iwan Academy", html }),
+      sendEmail({ to: student.email, subject: "Session Reminder — Iwan Academy", html }),
+      sendEmail({ to: teacher.email, subject: "Session Reminder — Iwan Academy", html }),
     ]);
     sent++;
   }

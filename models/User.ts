@@ -10,6 +10,8 @@ export interface IUser {
   balance: number;
   avatar?: string;
   phone?: string;
+  resetTokenHash?: string;
+  resetTokenExpiry?: Date;
   createdAt: Date;
 }
 
@@ -23,6 +25,8 @@ const UserSchema = new Schema<IUser>(
     balance: { type: Number, default: 0 },
     avatar: { type: String },
     phone: { type: String },
+    resetTokenHash: { type: String },
+    resetTokenExpiry: { type: Date },
   },
   { timestamps: true }
 );

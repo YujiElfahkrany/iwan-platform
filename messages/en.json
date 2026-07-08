@@ -134,7 +134,20 @@
     "account_rejected_error": "Your account registration was not approved",
     "pending_title": "Registration Submitted",
     "pending_message": "Thanks for registering! Your account is now awaiting review by our team. You'll be able to log in once it's approved.",
-    "back_home": "Back to Home"
+    "back_home": "Back to Home",
+    "forgot_password": "Forgot password?",
+    "forgot_password_title": "Forgot Password",
+    "forgot_password_desc": "Enter your email and we'll send you a link to reset your password.",
+    "send_reset_link": "Send Reset Link",
+    "reset_email_sent": "If an account exists with that email, we've sent a password reset link. Please check your inbox.",
+    "reset_email_failed": "Something went wrong. Please try again.",
+    "reset_password_title": "Reset Password",
+    "reset_password_desc": "Choose a new password for your account.",
+    "new_password": "New Password",
+    "confirm_new_password": "Confirm New Password",
+    "password_reset_success": "Your password has been reset. You can now log in.",
+    "reset_link_invalid": "This reset link is invalid or has expired. Please request a new one.",
+    "reset_failed": "Failed to reset password. Please try again."
   },
   "student_form": {
     "step1_title": "Your Details",

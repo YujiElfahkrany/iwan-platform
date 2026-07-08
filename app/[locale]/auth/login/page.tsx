@@ -80,7 +80,12 @@ export default function LoginPage() {
               <Input id="email" name="email" type="text" required autoComplete="username" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">{t("password")}</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">{t("password")}</Label>
+                <Link href="/auth/forgot-password" className="text-xs text-primary hover:underline">
+                  {t("forgot_password")}
+                </Link>
+              </div>
               <Input id="password" name="password" type="password" required autoComplete="current-password" />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
