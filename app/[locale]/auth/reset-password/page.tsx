@@ -5,7 +5,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { useRouter, Link } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Loader2, ChevronLeft, Check, X } from "lucide-react";
@@ -78,9 +78,8 @@ export default function ResetPasswordPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="password">{t("new_password")}</Label>
-                <Input
+                <PasswordInput
                   id="password"
-                  type="password"
                   required
                   autoComplete="new-password"
                   value={password}
@@ -99,9 +98,8 @@ export default function ResetPasswordPage() {
               )}
               <div className="space-y-2">
                 <Label htmlFor="confirm">{t("confirm_new_password")}</Label>
-                <Input
+                <PasswordInput
                   id="confirm"
-                  type="password"
                   required
                   autoComplete="new-password"
                   value={confirm}

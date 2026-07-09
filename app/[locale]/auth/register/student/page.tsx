@@ -5,12 +5,13 @@ import { useTranslations, useLocale } from "next-intl";
 import { useRouter, Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { StepProgress } from "@/components/auth/StepProgress";
-import { Loader2, ChevronLeft, ChevronRight, Eye, EyeOff } from "lucide-react";
+import { Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
 import PhoneInput from "react-phone-number-input";
@@ -67,8 +68,6 @@ export default function StudentRegisterPage() {
   const locale = useLocale();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
   const [subjects, setSubjects] = useState<string[]>([]);
   const [subjectOpen, setSubjectOpen] = useState(false);
   const sliderRef = useRef<HTMLDivElement>(null);
@@ -240,12 +239,7 @@ export default function StudentRegisterPage() {
               </div>
               <div className="space-y-2">
                 <Label>{t("password")} <span className="text-destructive">*</span></Label>
-                <div className="relative">
-                  <Input type={showPassword ? "text" : "password"} value={data.password} onChange={(e) => update("password", e.target.value)} required className="pe-10" />
-                  <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute end-3 top-1/2 -translate-y-1/2 text-[#2c1f12]/40 hover:text-[#2c1f12]/70">
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
+                <PasswordInput value={data.password} onChange={(e) => update("password", e.target.value)} required />
                 {data.password && (
                   <ul className="space-y-0.5 mt-1">
                     {passwordRules.map((r) => (
@@ -259,12 +253,7 @@ export default function StudentRegisterPage() {
               </div>
               <div className="space-y-2">
                 <Label>{t("confirm_password")} <span className="text-destructive">*</span></Label>
-                <div className="relative">
-                  <Input type={showConfirm ? "text" : "password"} value={data.confirmPassword} onChange={(e) => update("confirmPassword", e.target.value)} required className="pe-10" />
-                  <button type="button" onClick={() => setShowConfirm((v) => !v)} className="absolute end-3 top-1/2 -translate-y-1/2 text-[#2c1f12]/40 hover:text-[#2c1f12]/70">
-                    {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
+                <PasswordInput value={data.confirmPassword} onChange={(e) => update("confirmPassword", e.target.value)} required />
                 {data.confirmPassword && data.password !== data.confirmPassword && (
                   <p className="text-xs text-destructive">{t("password_mismatch")}</p>
                 )}

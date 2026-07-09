@@ -7,6 +7,7 @@ import { useRouter, Link } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { BookOpen, Loader2, ChevronLeft } from "lucide-react";
@@ -86,7 +87,7 @@ export default function LoginPage() {
                   {t("forgot_password")}
                 </Link>
               </div>
-              <Input id="password" name="password" type="password" required autoComplete="current-password" />
+              <PasswordInput id="password" name="password" required autoComplete="current-password" />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading && <Loader2 className="h-4 w-4 animate-spin me-2" />}
