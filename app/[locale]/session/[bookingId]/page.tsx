@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { connectDB } from "@/lib/mongodb";
 import { Booking } from "@/models/Booking";
-import { JitsiRoom } from "@/components/video/JitsiRoom";
+import { VideoRoom } from "@/components/video/VideoRoom";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
 import { ArrowLeft } from "lucide-react";
@@ -40,12 +40,12 @@ export default async function SessionPage({ params }: { params: Promise<{ bookin
         <p className="text-white/50 text-xs">Room: {booking.meetingRoomName}</p>
       </div>
 
-      {/* Jitsi fills remaining height */}
-      <div className="flex-1 p-2">
-        <JitsiRoom
-          roomName={booking.meetingRoomName}
+      {/* Video call fills remaining height */}
+      <div className="flex-1 p-2 min-h-0">
+        <VideoRoom
+          bookingId={bookingId}
           displayName={session.user.name ?? session.user.email ?? "User"}
-          email={session.user.email ?? undefined}
+          leaveHref={`/dashboard/${session.user.role}`}
         />
       </div>
     </div>

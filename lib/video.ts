@@ -5,5 +5,3 @@ export function generateRoomName(prefix: string): string {
   ).join("");
   return `iwan-${prefix}-${random}`;
 }
-
-export const JITSI_DOMAIN = "meet.jit.si";

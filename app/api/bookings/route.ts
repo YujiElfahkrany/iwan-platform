@@ -6,7 +6,7 @@ import { Booking } from "@/models/Booking";
 import { Slot } from "@/models/Slot";
 import { Class } from "@/models/Class";
 import { User } from "@/models/User";
-import { generateRoomName } from "@/lib/jitsi";
+import { generateRoomName } from "@/lib/video";
 import { studentClassPrice } from "@/lib/pricing";
 
 export async function GET(_req: NextRequest) {

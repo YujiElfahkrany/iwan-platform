@@ -5,7 +5,7 @@ metadata:
   type: project
 ---
 
-Next.js 15 app (app router), MongoDB/Mongoose, next-intl (ar/en), NextAuth, Jitsi Meet for video, Tailwind + shadcn/ui.
+Next.js 15 app (app router), MongoDB/Mongoose, next-intl (ar/en), NextAuth, Agora RTC for video (agora-rtc-react, token endpoint at /api/agora/token), Tailwind + shadcn/ui.
 
 **Key models:** User, TeacherProfile, StudentProfile, Class (now has totalSessions + curriculum), Booking, Slot, TopUpRequest, AssignmentSubmission (new).
 

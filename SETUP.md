@@ -34,6 +34,8 @@ Required variables:
 | `RESEND_API_KEY` | Resend Dashboard → API Keys |
 | `RESEND_FROM_EMAIL` | A verified sender in Resend |
 | `NEXT_PUBLIC_APP_URL` | `http://localhost:3000` (dev) or your Vercel URL |
+| `NEXT_PUBLIC_AGORA_APP_ID` | Agora Console → Project → App ID |
+| `AGORA_APP_CERTIFICATE` | Agora Console → Project → Primary Certificate |
 
 ### 3. Stripe webhook (local)
 ```bash
@@ -68,7 +70,7 @@ Visit: http://localhost:3000
 | Database | MongoDB via Mongoose |
 | i18n | next-intl (EN + AR RTL) |
 | Payments | Stripe Checkout + webhooks |
-| Video | Jitsi Meet (iframe, meet.jit.si) |
+| Video | Agora RTC (agora-rtc-react + token auth) |
 | Email | Resend |
 | Styling | Tailwind CSS + shadcn/ui |
 | Font | Cairo (Arabic + Latin) |

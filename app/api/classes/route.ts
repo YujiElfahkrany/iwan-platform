@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/mongodb";
 import { Class } from "@/models/Class";
-import { generateRoomName } from "@/lib/jitsi";
+import { generateRoomName } from "@/lib/video";
 import { studentClassPrice } from "@/lib/pricing";
 
 export async function GET(req: NextRequest) {
