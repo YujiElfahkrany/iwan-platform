@@ -37,6 +37,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           email: user.email,
           name: user.name,
           role: user.role,
+          gender: user.gender,
           image: user.avatar,
         };
       },
@@ -47,6 +48,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) {
         token.id = user.id;
         token.role = (user as { role?: string }).role;
+        token.gender = (user as { gender?: string }).gender;
       }
       if (trigger === "update" && session) {
         if (typeof session.name === "string") token.name = session.name;
@@ -58,6 +60,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (token) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
+        session.user.gender = token.gender as string | undefined;
       }
       return session;
     },
@@ -73,6 +76,7 @@ declare module "next-auth" {
     user: {
       id: string;
       role: string;
+      gender?: string;
       name?: string | null;
       email?: string | null;
       image?: string | null;

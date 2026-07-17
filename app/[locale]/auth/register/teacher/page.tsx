@@ -133,6 +133,7 @@ export default function TeacherRegisterPage() {
           phone: data.phone,
           password: data.password,
           image: data.avatar,
+          gender: data.gender,
           role: "teacher",
           profile: {
             subjects: data.subjects,

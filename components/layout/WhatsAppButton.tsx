@@ -1,14 +1,19 @@
 "use client";
 
 import { useLocale } from "next-intl";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
+import { supportWhatsAppUrl } from "@/lib/support";
 
 export function WhatsAppButton() {
   const locale = useLocale();
+  const { data: session } = useSession();
   const isRtl = locale === "ar";
 
+  if (!session?.user) return null;
+
   const label = isRtl ? "تحتاج مساعدة؟" : "Need help?";
-  const waUrl = "https://wa.me/819082272250";
+  const waUrl = supportWhatsAppUrl(session.user.gender);
 
   return (
     <a

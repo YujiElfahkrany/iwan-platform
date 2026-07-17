@@ -130,6 +130,7 @@ export default function StudentRegisterPage() {
           phone: data.phone,
           password: data.password,
           image: data.avatar,
+          gender: data.gender,
           role: "student",
           profile: {
             subjects: data.subjects,

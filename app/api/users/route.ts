@@ -12,6 +12,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { name, email, password, role, profile, image, phone } = body;
+    const gender = body.gender === "male" || body.gender === "female" ? body.gender : undefined;
 
     if (!name || !email || !password || !role) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
-    const user = await User.create({ name, email, passwordHash, role, status: "pending", balance: 0, avatar: image, phone });
+    const user = await User.create({ name, email, passwordHash, role, status: "pending", balance: 0, avatar: image, phone, gender });
 
     if (role === "teacher") {
       await TeacherProfile.create({ userId: user._id, ...profile });
