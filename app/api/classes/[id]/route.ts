@@ -5,6 +5,7 @@ import { Class } from "@/models/Class";
 import { User } from "@/models/User";
 import { sendEmail } from "@/lib/email";
 import { studentClassPrice } from "@/lib/pricing";
+import { syncSubmissionsWithCurriculum } from "@/lib/curriculumSync";
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -57,6 +58,17 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (Array.isArray(body.curriculum)) cls.curriculum = body.curriculum;
     if (Array.isArray(body.daysOfWeek)) cls.daysOfWeek = body.daysOfWeek;
     await cls.save();
+
+    if (Array.isArray(body.curriculum)) {
+      await syncSubmissionsWithCurriculum(
+        cls._id,
+        cls.curriculum.map((c: { sessionNumber: number; assignmentTitle: string; maxMarks: number }) => ({
+          sessionNumber: c.sessionNumber,
+          assignmentTitle: c.assignmentTitle,
+          maxMarks: c.maxMarks,
+        }))
+      );
+    }
 
     // Notify enrolled students of the changes
     let notified = 0;

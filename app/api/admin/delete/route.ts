@@ -7,6 +7,7 @@ import { TeacherProfile } from "@/models/TeacherProfile";
 import { StudentProfile } from "@/models/StudentProfile";
 import { Booking } from "@/models/Booking";
 import { AssignmentSubmission } from "@/models/AssignmentSubmission";
+import { removeStudentFromClasses } from "@/lib/enrollment";
 
 export async function DELETE(req: NextRequest) {
   const session = await auth();
@@ -43,6 +44,7 @@ export async function DELETE(req: NextRequest) {
     if (user.role === "student") {
       await StudentProfile.deleteOne({ userId: id });
       await AssignmentSubmission.deleteMany({ studentId: id });
+      await removeStudentFromClasses(id);
     }
 
     return NextResponse.json({ ok: true });
