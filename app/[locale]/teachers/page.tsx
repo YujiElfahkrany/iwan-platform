@@ -8,6 +8,7 @@ import { Link } from "@/i18n/navigation";
 import { Star, BookOpen, Clock, Users, Tag } from "lucide-react";
 import { getTranslations, getLocale } from "next-intl/server";
 import { studentClassPrice } from "@/lib/pricing";
+import { LocalDate } from "@/components/LocalDate";
 
 const SUBJECT_MAP: Record<string, string[]> = {
   quran:   ["القرآن", "quran"],
@@ -83,17 +84,6 @@ async function getClasses(subject?: string) {
   } catch {
     return [];
   }
-}
-
-function formatDate(iso: string, locale: string) {
-  return new Date(iso).toLocaleDateString(locale === "ar" ? "ar-EG" : "en-GB", {
-    weekday: "short",
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 }
 
 function formatDuration(startIso: string, endIso: string, minuteLabel: string, hourLabel: string) {
@@ -320,7 +310,7 @@ export default async function TeachersPage({
                           <div className="space-y-1.5 text-xs text-[#78716c] mt-auto">
                             <div className="flex items-center gap-2">
                               <Clock className="h-3.5 w-3.5 text-[#4db6ac] shrink-0" />
-                              <span>{formatDate(cls.startTime, locale)}</span>
+                              <span><LocalDate iso={cls.startTime} locale={locale} /></span>
                             </div>
                             <div className="flex items-center gap-2">
                               <Tag className="h-3.5 w-3.5 text-[#4db6ac] shrink-0" />

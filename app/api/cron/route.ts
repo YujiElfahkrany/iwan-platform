@@ -4,6 +4,7 @@ import { Booking } from "@/models/Booking";
 import { Slot } from "@/models/Slot";
 import { User } from "@/models/User";
 import { sendEmail } from "@/lib/email";
+import { PLATFORM_TIMEZONE } from "@/lib/datetime";
 
 // Vercel Cron: runs daily at 08:00 UTC
 export async function GET(req: NextRequest) {
@@ -40,7 +41,8 @@ export async function GET(req: NextRequest) {
 
     const joinUrl = `${process.env.NEXT_PUBLIC_APP_URL}/en/session/${booking._id}`;
     const sessionTime = new Date(slot.startTime).toLocaleString("en-US", {
-      weekday: "long", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit"
+      weekday: "long", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit",
+      timeZone: PLATFORM_TIMEZONE,
     });
     const html = `
       <h2>Session Reminder — Tomorrow!</h2>

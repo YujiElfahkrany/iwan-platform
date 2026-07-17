@@ -6,6 +6,7 @@ import { User } from "@/models/User";
 import { sendEmail } from "@/lib/email";
 import { studentClassPrice } from "@/lib/pricing";
 import { syncSubmissionsWithCurriculum } from "@/lib/curriculumSync";
+import { PLATFORM_TIMEZONE } from "@/lib/datetime";
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -76,6 +77,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       const students = await User.find({ _id: { $in: cls.enrolledStudents } }, { email: 1, name: 1 }).lean();
       const dateOpts: Intl.DateTimeFormatOptions = {
         weekday: "long", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit",
+        timeZone: PLATFORM_TIMEZONE,
       };
       const whenEn = new Date(cls.startTime).toLocaleString("en-US", dateOpts);
       const whenAr = new Date(cls.startTime).toLocaleString("ar-EG", dateOpts);

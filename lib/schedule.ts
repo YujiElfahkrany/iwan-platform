@@ -1,4 +1,4 @@
-const TIMEZONE = "Africa/Cairo";
+import { PLATFORM_TIMEZONE as TIMEZONE } from "@/lib/datetime";
 
 function weekdayInTz(date: Date): string {
   return new Intl.DateTimeFormat("en-US", { timeZone: TIMEZONE, weekday: "long" })
