@@ -18,7 +18,7 @@ import PhoneInput from "react-phone-number-input";
 import arLabels from "react-phone-number-input/locale/ar.json";
 import "react-phone-number-input/style.css";
 import type { E164Number } from "libphonenumber-js/core";
-import { LANGUAGES } from "@/lib/constants";
+import { LANGUAGES, AGE_MIN, AGE_MAX } from "@/lib/constants";
 
 const TIMEZONES = ["UTC", "America/New_York", "America/Los_Angeles", "Europe/London", "Europe/Paris", "Asia/Dubai", "Asia/Riyadh", "Asia/Cairo", "Asia/Karachi"];
 
@@ -47,6 +47,7 @@ const AVATARS: { name: string; url: string; gender: "male" | "female" }[] = [
 
 type FormData = {
   name: string;
+  age: string;
   email: string;
   phone: string;
   password: string;
@@ -92,6 +93,7 @@ export default function StudentRegisterPage() {
   }
   const [data, setData] = useState<FormData>({
     name: "",
+    age: "",
     email: "",
     phone: "",
     password: "",
@@ -117,6 +119,7 @@ export default function StudentRegisterPage() {
     { label: t("pw_number"), valid: /[0-9]/.test(data.password) },
   ];
   const passwordValid = passwordRules.every((r) => r.valid);
+  const ageValid = Number(data.age) >= AGE_MIN && Number(data.age) <= AGE_MAX;
 
   async function submit() {
     setLoading(true);
@@ -133,6 +136,7 @@ export default function StudentRegisterPage() {
           gender: data.gender,
           role: "student",
           profile: {
+            age: Number(data.age),
             subjects: data.subjects,
             learningLevel: data.learningLevel,
             learningHistory: data.learningHistory,
@@ -161,7 +165,7 @@ export default function StudentRegisterPage() {
       <Card className="w-full max-w-lg shadow-2xl">
         <CardHeader>
           <Link href="/" className="flex items-center gap-1.5 mb-2 w-fit text-[#2c1f12]/60 hover:text-[#c8973a] transition-colors text-sm">
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className={`h-4 w-4 ${locale === "ar" ? "rotate-180" : ""}`} />
             <Image src="/logo.png" alt="Iwan" width={44} height={44} unoptimized />
             <span>{locale === "ar" ? "العودة إلى الصفحة الرئيسية" : "Return to Homepage"}</span>
           </Link>
@@ -224,6 +228,10 @@ export default function StudentRegisterPage() {
                 <Input value={data.name} onChange={(e) => update("name", e.target.value)} required />
               </div>
               <div className="space-y-2">
+                <Label>{t("age")} <span className="text-destructive">*</span></Label>
+                <Input type="number" min={AGE_MIN} max={AGE_MAX} value={data.age} onChange={(e) => update("age", e.target.value)} required />
+              </div>
+              <div className="space-y-2">
                 <Label>{t("email")} <span className="text-destructive">*</span></Label>
                 <Input type="email" value={data.email} onChange={(e) => update("email", e.target.value)} required />
               </div>
@@ -262,7 +270,7 @@ export default function StudentRegisterPage() {
               <Button
                 className="w-full mt-2"
                 onClick={() => setStep(2)}
-                disabled={!data.name || !data.email || !data.phone || !passwordValid || !data.confirmPassword || data.password !== data.confirmPassword}
+                disabled={!data.name || !ageValid || !data.email || !data.phone || !passwordValid || !data.confirmPassword || data.password !== data.confirmPassword}
               >
                 {ta("next")}
               </Button>

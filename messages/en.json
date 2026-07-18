@@ -99,7 +99,7 @@
     "step2_detail2": "Read verified reviews from other students before booking.",
     "step2_detail3": "Browse open group classes for a more affordable learning option.",
     "step3_detail1": "Pay securely with your balance and get instant confirmation.",
-    "step3_detail2": "Join the live video session via Zoom — you'll receive the link before it starts.",
+    "step3_detail2": "Join the live video session directly on the platform — the join link appears on your dashboard throughout the lesson time.",
     "step3_detail3": "Submit assignments, track your progress, and view marks all in one place."
   },
   "faq": {
@@ -111,7 +111,7 @@
     "q3": "How do group classes work?",
     "a3": "Teachers open classes for up to a set number of students. Enroll and pay — a video room opens at the scheduled time.",
     "q4": "What video platform is used?",
-    "a4": "Sessions run on Zoom — you'll receive a link before your session starts."
+    "a4": "Sessions run in the platform's built-in video room — the join link is visible on your dashboard throughout the lesson time."
   },
   "auth": {
     "login": "Log In",
@@ -157,6 +157,7 @@
     "male": "Male",
     "female": "Female",
     "name": "Full Name",
+    "age": "Age",
     "email": "Email Address",
     "phone": "Phone Number",
     "password": "Password",
