@@ -83,8 +83,9 @@ export async function POST(req: NextRequest) {
     await connectDB();
     const body = await req.json();
     const cls = await Class.create({
-      teacherId: session.user.id,
       ...body,
+      // Fields below must win over anything in the client body.
+      teacherId: session.user.id,
       meetingRoomName: generateRoomName("class"),
       enrolledStudents: [],
     });

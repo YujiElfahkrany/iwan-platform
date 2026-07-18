@@ -4,7 +4,7 @@ import { connectDB } from "@/lib/mongodb";
 import { AssignmentSubmission } from "@/models/AssignmentSubmission";
 import { Class } from "@/models/Class";
 import { User } from "@/models/User";
-import { sendEmail } from "@/lib/email";
+import { sendEmail, escapeHtml } from "@/lib/email";
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
@@ -65,8 +65,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const approved = status === "approved";
     const markLineAr = approved ? `<li><strong>الدرجة:</strong> ${mark} من ${sub.maxMarks}</li>` : "";
     const markLineEn = approved ? `<li><strong>Mark:</strong> ${mark} / ${sub.maxMarks}</li>` : "";
-    const feedbackLineAr = feedback ? `<li><strong>ملاحظات المعلم:</strong> ${feedback}</li>` : "";
-    const feedbackLineEn = feedback ? `<li><strong>Teacher feedback:</strong> ${feedback}</li>` : "";
+    const safeFeedback = feedback ? escapeHtml(String(feedback)) : "";
+    const feedbackLineAr = safeFeedback ? `<li><strong>ملاحظات المعلم:</strong> ${safeFeedback}</li>` : "";
+    const feedbackLineEn = safeFeedback ? `<li><strong>Teacher feedback:</strong> ${safeFeedback}</li>` : "";
+    const safeName = escapeHtml(student.name);
+    const safeTitle = escapeHtml(sub.assignmentTitle);
+    const safeClassTitle = escapeHtml(cls.title);
     try {
       await sendEmail({
         to: student.email,
@@ -76,8 +80,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         html: `
           <div dir="rtl">
             <h2>${approved ? "تم قبول واجبك" : "لم يتم قبول واجبك"}</h2>
-            <p>مرحباً ${student.name}،</p>
-            <p>قام معلمك بمراجعة واجبك «${sub.assignmentTitle}» (الجلسة ${sub.sessionNumber}) في فصل «${cls.title}».</p>
+            <p>مرحباً ${safeName}،</p>
+            <p>قام معلمك بمراجعة واجبك «${safeTitle}» (الجلسة ${sub.sessionNumber}) في فصل «${safeClassTitle}».</p>
             <ul>
               ${markLineAr}
               ${feedbackLineAr}
@@ -87,8 +91,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
           <hr />
           <div dir="ltr">
             <h2>${approved ? "Your assignment was approved" : "Your assignment was not approved"}</h2>
-            <p>Hi ${student.name},</p>
-            <p>Your teacher has reviewed your submission "${sub.assignmentTitle}" (session ${sub.sessionNumber}) in the class "${cls.title}".</p>
+            <p>Hi ${safeName},</p>
+            <p>Your teacher has reviewed your submission "${safeTitle}" (session ${sub.sessionNumber}) in the class "${safeClassTitle}".</p>
             <ul>
               ${markLineEn}
               ${feedbackLineEn}

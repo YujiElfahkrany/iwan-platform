@@ -5,6 +5,8 @@ import { Booking } from "@/models/Booking";
 import { TeacherProfile } from "@/models/TeacherProfile";
 import { StudentProfile } from "@/models/StudentProfile";
 import { AssignmentSubmission } from "@/models/AssignmentSubmission";
+import { Slot } from "@/models/Slot";
+import { TopUpRequest } from "@/models/TopUpRequest";
 import { removeStudentFromClasses } from "@/lib/enrollment";
 
 type Id = string | mongoose.Types.ObjectId;
@@ -40,23 +42,27 @@ async function deleteTeacherClasses(teacherId: mongoose.Types.ObjectId): Promise
 /**
  * Deletes a user and their role-appropriate related data.
  *
- * - teacher: profile, bookings keyed by teacherId, and every class they
- *   own (with that class's submissions and bookings).
+ * - all roles: the user document and their top-up requests.
+ * - teacher: profile, bookings keyed by teacherId, their slots, and every
+ *   class they own (with that class's submissions and bookings).
  * - student: profile, bookings keyed by studentId, their submissions,
  *   and removal from class rosters (via lib/enrollment).
- * - other roles (admin): only the user document.
  */
 export async function deleteUserCascade(user: {
   _id: Id;
   role: "student" | "teacher" | "admin";
 }): Promise<void> {
   const id = new mongoose.Types.ObjectId(user._id);
-  await User.deleteOne({ _id: id });
+  await Promise.all([
+    User.deleteOne({ _id: id }),
+    TopUpRequest.deleteMany({ userId: id }),
+  ]);
 
   if (user.role === "teacher") {
     await Promise.all([
       TeacherProfile.deleteOne({ userId: id }),
       Booking.deleteMany({ teacherId: id }),
+      Slot.deleteMany({ teacherId: id }),
       deleteTeacherClasses(id),
     ]);
   }

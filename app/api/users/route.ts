@@ -4,7 +4,7 @@ import { connectDB } from "@/lib/mongodb";
 import { User } from "@/models/User";
 import { TeacherProfile } from "@/models/TeacherProfile";
 import { StudentProfile } from "@/models/StudentProfile";
-import { sendEmail } from "@/lib/email";
+import { sendEmail, escapeHtml } from "@/lib/email";
 
 const ADMIN_NOTIFICATION_EMAIL = "vizwrks@gmail.com";
 
@@ -41,9 +41,9 @@ export async function POST(req: NextRequest) {
         html: `
           <p>A new ${role} has registered on Iwan Academy and is awaiting approval:</p>
           <ul>
-            <li><strong>Name:</strong> ${name}</li>
-            <li><strong>Email:</strong> ${email}</li>
-            <li><strong>Role:</strong> ${role}</li>
+            <li><strong>Name:</strong> ${escapeHtml(name)}</li>
+            <li><strong>Email:</strong> ${escapeHtml(email)}</li>
+            <li><strong>Role:</strong> ${escapeHtml(role)}</li>
           </ul>
           <p>Review and approve or reject this account from the admin dashboard.</p>
         `,

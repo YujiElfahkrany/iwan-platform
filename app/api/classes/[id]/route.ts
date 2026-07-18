@@ -3,9 +3,9 @@ import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/mongodb";
 import { Class } from "@/models/Class";
 import { User } from "@/models/User";
-import { sendEmail } from "@/lib/email";
+import { sendEmail, escapeHtml } from "@/lib/email";
 import { studentClassPrice } from "@/lib/pricing";
-import { syncSubmissionsWithCurriculum } from "@/lib/curriculumSync";
+import { diffCurriculum, syncSubmissionsWithCurriculum } from "@/lib/curriculumSync";
 import { PLATFORM_TIMEZONE } from "@/lib/datetime";
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -88,15 +88,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       const daysAr = cls.daysOfWeek.map((d: string) => dayNamesAr[d] ?? d).join("، ");
 
       // Diff assignments (curriculum) to report added/removed ones
-      const key = (c: { sessionNumber: number; assignmentTitle: string }) => `${c.sessionNumber}::${c.assignmentTitle}`;
-      const oldKeys = new Set(oldCurriculum.map(key));
-      const newKeys = new Set(cls.curriculum.map(key));
-      const addedAssignments = cls.curriculum.filter((c: { sessionNumber: number; assignmentTitle: string }) => !oldKeys.has(key(c)));
-      const removedAssignments = oldCurriculum.filter((c) => !newKeys.has(key(c)));
+      const { added: addedAssignments, removed: removedAssignments } = diffCurriculum(
+        oldCurriculum,
+        cls.curriculum.map((c: { sessionNumber: number; assignmentTitle: string }) => ({
+          sessionNumber: c.sessionNumber,
+          assignmentTitle: c.assignmentTitle,
+        }))
+      );
       const assignmentItemAr = (c: { sessionNumber: number; assignmentTitle: string }) =>
-        `<li>«${c.assignmentTitle}» (بعد الجلسة ${c.sessionNumber})</li>`;
+        `<li>«${escapeHtml(c.assignmentTitle)}» (بعد الجلسة ${c.sessionNumber})</li>`;
       const assignmentItemEn = (c: { sessionNumber: number; assignmentTitle: string }) =>
-        `<li>"${c.assignmentTitle}" (after session ${c.sessionNumber})</li>`;
+        `<li>"${escapeHtml(c.assignmentTitle)}" (after session ${c.sessionNumber})</li>`;
+      const safeTitle = escapeHtml(cls.title);
+      const safeSubject = escapeHtml(cls.subject);
       const assignmentsSectionAr =
         (addedAssignments.length ? `<p><strong>واجبات جديدة:</strong></p><ul>${addedAssignments.map(assignmentItemAr).join("")}</ul>` : "") +
         (removedAssignments.length ? `<p><strong>واجبات تم حذفها:</strong></p><ul>${removedAssignments.map(assignmentItemAr).join("")}</ul>` : "");
@@ -106,11 +110,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
       const html = `
         <div dir="rtl">
-          <h2>تحديث الفصل — ${cls.title}</h2>
+          <h2>تحديث الفصل — ${safeTitle}</h2>
           <p>قام معلمك بتحديث تفاصيل فصل أنت مسجل فيه:</p>
           <ul>
-            <li><strong>العنوان:</strong> ${cls.title}</li>
-            <li><strong>المادة:</strong> ${cls.subject}</li>
+            <li><strong>العنوان:</strong> ${safeTitle}</li>
+            <li><strong>المادة:</strong> ${safeSubject}</li>
             <li><strong>يبدأ:</strong> ${whenAr}</li>
             ${cls.daysOfWeek.length ? `<li><strong>أيام الجلسات:</strong> ${daysAr}</li>` : ""}
             <li><strong>إجمالي الجلسات:</strong> ${cls.totalSessions}</li>
@@ -120,11 +124,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         </div>
         <hr />
         <div dir="ltr">
-          <h2>Class Updated — ${cls.title}</h2>
+          <h2>Class Updated — ${safeTitle}</h2>
           <p>Your teacher has updated the details of a class you're enrolled in:</p>
           <ul>
-            <li><strong>Title:</strong> ${cls.title}</li>
-            <li><strong>Subject:</strong> ${cls.subject}</li>
+            <li><strong>Title:</strong> ${safeTitle}</li>
+            <li><strong>Subject:</strong> ${safeSubject}</li>
             <li><strong>Starts:</strong> ${whenEn}</li>
             ${cls.daysOfWeek.length ? `<li><strong>Session days:</strong> ${cls.daysOfWeek.join(", ")}</li>` : ""}
             <li><strong>Total sessions:</strong> ${cls.totalSessions}</li>

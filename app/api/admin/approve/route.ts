@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/mongodb";
 import { User } from "@/models/User";
-import { sendEmail } from "@/lib/email";
+import { sendEmail, escapeHtml } from "@/lib/email";
 
 export async function PATCH(req: NextRequest) {
   const session = await auth();
@@ -28,14 +28,14 @@ export async function PATCH(req: NextRequest) {
         html: `
           <div dir="rtl">
             <h2>تمت الموافقة على حسابك</h2>
-            <p>مرحباً ${user.name}،</p>
+            <p>مرحباً ${escapeHtml(user.name)}،</p>
             <p>تمت الموافقة على حسابك في أكاديمية إيوان. يمكنك الآن تسجيل الدخول والبدء.</p>
             <p><a href="${loginUrl}">تسجيل الدخول</a></p>
           </div>
           <hr />
           <div dir="ltr">
             <h2>Your account has been approved</h2>
-            <p>Hi ${user.name},</p>
+            <p>Hi ${escapeHtml(user.name)},</p>
             <p>Your Iwan Academy account has been approved. You can now log in and get started.</p>
             <p><a href="${loginUrl}">Log in</a></p>
           </div>

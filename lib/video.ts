@@ -1,7 +1,7 @@
+import { randomInt } from "crypto";
+
 export function generateRoomName(prefix: string): string {
   const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-  const random = Array.from({ length: 8 }, () =>
-    chars[Math.floor(Math.random() * chars.length)]
-  ).join("");
+  const random = Array.from({ length: 8 }, () => chars[randomInt(chars.length)]).join("");
   return `iwan-${prefix}-${random}`;
 }

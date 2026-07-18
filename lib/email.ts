@@ -12,6 +12,16 @@ const transporter = nodemailer.createTransport({
 
 export const FROM_EMAIL = `Iwan Academy <${process.env.GMAIL_USER}>`;
 
+/** Escapes user-supplied text before interpolating it into email HTML. */
+export function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 export async function sendEmail(opts: { to: string; subject: string; html: string }) {
   await transporter.sendMail({ from: FROM_EMAIL, ...opts });
 }

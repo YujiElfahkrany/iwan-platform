@@ -7,6 +7,8 @@ import { Booking, IBooking } from "@/models/Booking";
 import { TeacherProfile } from "@/models/TeacherProfile";
 import { StudentProfile } from "@/models/StudentProfile";
 import { AssignmentSubmission } from "@/models/AssignmentSubmission";
+import { Slot } from "@/models/Slot";
+import { TopUpRequest } from "@/models/TopUpRequest";
 import { deleteClassCascade, deleteUserCascade } from "@/lib/adminCascade";
 
 let mongod: MongoMemoryServer;
@@ -23,8 +25,8 @@ afterAll(async () => {
 
 beforeEach(async () => {
   await Promise.all(
-    [User, Class, Booking, TeacherProfile, StudentProfile, AssignmentSubmission].map((m) =>
-      m.deleteMany({})
+    [User, Class, Booking, TeacherProfile, StudentProfile, AssignmentSubmission, Slot, TopUpRequest].map(
+      (m) => m.deleteMany({})
     )
   );
 });
@@ -68,6 +70,20 @@ function makeBooking(
     status: "confirmed",
     ...overrides,
   });
+}
+
+function makeSlot(teacherId: mongoose.Types.ObjectId) {
+  return Slot.create({
+    teacherId,
+    startTime: new Date("2026-08-01T10:00:00Z"),
+    endTime: new Date("2026-08-01T11:00:00Z"),
+    durationMinutes: 60,
+    price: 10,
+  });
+}
+
+function makeTopUp(userId: mongoose.Types.ObjectId) {
+  return TopUpRequest.create({ userId, amount: 50, receiptData: "data" });
 }
 
 function makeSubmission(classId: mongoose.Types.ObjectId, studentId: mongoose.Types.ObjectId) {
@@ -133,6 +149,18 @@ describe("deleteUserCascade (teacher)", () => {
     expect(await Booking.countDocuments({ teacherId: teacher._id })).toBe(0);
   });
 
+  it("deletes the teacher's slots but leaves other teachers' slots", async () => {
+    const teacher = await makeUser("teacher");
+    const otherTeacher = await makeUser("teacher");
+    await makeSlot(teacher._id);
+    await makeSlot(otherTeacher._id);
+
+    await deleteUserCascade({ _id: teacher._id, role: "teacher" });
+
+    expect(await Slot.countDocuments({ teacherId: teacher._id })).toBe(0);
+    expect(await Slot.countDocuments({ teacherId: otherTeacher._id })).toBe(1);
+  });
+
   it("also deletes enrolled students' bookings that reference the teacher's classes", async () => {
     const teacher = await makeUser("teacher");
     const student = await makeUser("student");
@@ -180,6 +208,18 @@ describe("deleteUserCascade (student)", () => {
     expect(await StudentProfile.countDocuments({ userId: student._id })).toBe(0);
     expect(await Booking.countDocuments({ studentId: student._id })).toBe(0);
     expect(await AssignmentSubmission.countDocuments({ studentId: student._id })).toBe(0);
+  });
+
+  it("deletes the student's top-up requests but leaves other users'", async () => {
+    const student = await makeUser("student");
+    const otherStudent = await makeUser("student");
+    await makeTopUp(student._id);
+    await makeTopUp(otherStudent._id);
+
+    await deleteUserCascade({ _id: student._id, role: "student" });
+
+    expect(await TopUpRequest.countDocuments({ userId: student._id })).toBe(0);
+    expect(await TopUpRequest.countDocuments({ userId: otherStudent._id })).toBe(1);
   });
 
   it("pulls the student from class rosters but keeps the classes", async () => {

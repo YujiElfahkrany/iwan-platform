@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/mongodb";
 import { TopUpRequest } from "@/models/TopUpRequest";
 import { User } from "@/models/User";
-import { sendEmail } from "@/lib/email";
+import { sendEmail, escapeHtml } from "@/lib/email";
 
 export async function GET() {
   const session = await auth();
@@ -63,14 +63,14 @@ export async function PATCH(req: NextRequest) {
           html: `
             <div dir="rtl">
               <h2>تمت الموافقة على شحن الرصيد</h2>
-              <p>مرحباً ${user.name}،</p>
+              <p>مرحباً ${escapeHtml(user.name)}،</p>
               <p>تمت الموافقة على طلب شحن رصيدك بمبلغ <strong>${topup.amount} جنيه</strong>.</p>
               <p>رصيدك الحالي: <strong>${user.balance} جنيه</strong>.</p>
             </div>
             <hr />
             <div dir="ltr">
               <h2>Your top-up has been approved</h2>
-              <p>Hi ${user.name},</p>
+              <p>Hi ${escapeHtml(user.name)},</p>
               <p>Your balance top-up request of <strong>${topup.amount} LE</strong> has been approved.</p>
               <p>Your current balance: <strong>${user.balance} LE</strong>.</p>
             </div>

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import mongoose from "mongoose";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/mongodb";
 import { Booking } from "@/models/Booking";
@@ -8,6 +7,8 @@ import { Class } from "@/models/Class";
 import { User } from "@/models/User";
 import { generateRoomName } from "@/lib/video";
 import { studentClassPrice } from "@/lib/pricing";
+import { enrollStudentInClass, unenrollStudentFromClass } from "@/lib/enrollment";
+import { chargeStudent } from "@/lib/wallet";
 
 export async function GET(_req: NextRequest) {
   try {
@@ -42,11 +43,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     await connectDB();
-    const { type, slotId, classId, teacherId, useCredits, price } = await req.json();
+    const { type, slotId, classId, teacherId, useCredits } = await req.json();
 
     let meetingRoomName = generateRoomName("session");
     let resolvedTeacherId = teacherId;
-    let classCost: number | null = null;
+    let cost = 0;
 
     if (type === "1on1" && slotId) {
       const slot = await Slot.findById(slotId);
@@ -55,45 +56,54 @@ export async function POST(req: NextRequest) {
       }
       meetingRoomName = generateRoomName("1on1");
       resolvedTeacherId = slot.teacherId.toString();
+      // Price comes from the slot itself, never from the client.
+      cost = slot.price;
     }
 
     if (type === "class" && classId) {
+      // Fast-path rejection; the atomic enroll below is the authoritative guard.
       const cls = await Class.findById(classId);
       if (!cls || cls.enrolledStudents.length >= cls.maxStudents) {
         return NextResponse.json({ error: "Class is full" }, { status: 400 });
       }
       meetingRoomName = cls.meetingRoomName;
       resolvedTeacherId = cls.teacherId.toString();
-      classCost = studentClassPrice(cls.price);
+      // For classes the cost is computed server-side (teacher rate + commission)
+      cost = studentClassPrice(cls.price);
     }
 
     // Credits-based payment
     if (useCredits) {
-      // For classes the cost is computed server-side (teacher rate + commission)
-      const cost = classCost ?? (Number(price) || 0);
-      const student = await User.findById(session.user.id);
-      if (!student) return NextResponse.json({ error: "User not found" }, { status: 404 });
-      if (student.balance < cost) {
-        return NextResponse.json({ error: `Insufficient balance. You have ${student.balance} LE but need ${cost} LE.` }, { status: 400 });
-      }
-
-      student.balance -= cost;
-      await student.save();
-
-      if (type === "1on1" && slotId) {
-        await Slot.findByIdAndUpdate(slotId, { status: "booked" });
-      }
-
+      // Claim the seat/slot atomically before charging, so a race between
+      // students can never overbook or charge for a seat that no longer exists.
       if (type === "class" && classId) {
-        const studentObjId = new mongoose.Types.ObjectId(session.user.id);
-        const updatedClass = await Class.findByIdAndUpdate(
-          classId,
-          { $addToSet: { enrolledStudents: studentObjId } },
-          { new: true }
-        );
-        if (updatedClass && updatedClass.enrolledStudents.length >= updatedClass.maxStudents) {
-          await Class.findByIdAndUpdate(classId, { $set: { status: "full" } });
+        const { enrolled } = await enrollStudentInClass(classId, session.user.id);
+        if (!enrolled) {
+          return NextResponse.json({ error: "Class is full" }, { status: 400 });
         }
+      }
+      if (type === "1on1" && slotId) {
+        const claimed = await Slot.findOneAndUpdate(
+          { _id: slotId, status: "available" },
+          { status: "booked" }
+        );
+        if (!claimed) {
+          return NextResponse.json({ error: "Slot not available" }, { status: 400 });
+        }
+      }
+
+      const charged = await chargeStudent(session.user.id, cost);
+      if (!charged) {
+        // Release whatever we just claimed.
+        if (type === "class" && classId) {
+          await unenrollStudentFromClass(classId, session.user.id);
+        }
+        if (type === "1on1" && slotId) {
+          await Slot.findByIdAndUpdate(slotId, { status: "available" });
+        }
+        const student = await User.findById(session.user.id).select("balance").lean();
+        if (!student) return NextResponse.json({ error: "User not found" }, { status: 404 });
+        return NextResponse.json({ error: `Insufficient balance. You have ${student.balance} LE but need ${cost} LE.` }, { status: 400 });
       }
 
       const booking = await Booking.create({
@@ -104,6 +114,7 @@ export async function POST(req: NextRequest) {
         classId,
         meetingRoomName,
         status: "confirmed",
+        pricePaid: cost,
       });
 
       return NextResponse.json({ id: booking._id.toString(), confirmed: true }, { status: 201 });

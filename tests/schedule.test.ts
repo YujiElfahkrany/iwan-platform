@@ -49,6 +49,16 @@ describe("nearestClassSessionTime", () => {
     expect(result).toEqual(d("2026-08-03T10:00:00.000Z"));
   });
 
+  it("finds a session shortly after midnight from the evening before (reminder wraparound)", () => {
+    const cls = {
+      startTime: "2026-07-06T00:05:00.000Z", // Monday 00:05
+      daysOfWeek: ["monday"],
+    };
+    // now: Sunday 2026-07-12 23:55 — the Monday 00:05 session is 10 minutes away.
+    const result = nearestClassSessionTime(cls, d("2026-07-12T23:55:00.000Z"));
+    expect(result).toEqual(d("2026-07-13T00:05:00.000Z"));
+  });
+
   it("never returns an occurrence before the course start", () => {
     const cls = {
       startTime: "2026-08-03T10:00:00.000Z", // Monday

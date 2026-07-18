@@ -8,6 +8,7 @@ export interface IBooking {
   slotId?: mongoose.Types.ObjectId;
   classId?: mongoose.Types.ObjectId;
   status: "pending" | "confirmed" | "completed" | "cancelled";
+  pricePaid?: number;
   stripePaymentIntentId?: string;
   stripeSessionId?: string;
   stripePaymentStatus?: string;
@@ -27,6 +28,7 @@ const BookingSchema = new Schema<IBooking>(
       enum: ["pending", "confirmed", "completed", "cancelled"],
       default: "pending",
     },
+    pricePaid: { type: Number, min: 0 },
     stripePaymentIntentId: { type: String },
     stripeSessionId: { type: String },
     stripePaymentStatus: { type: String },
@@ -37,5 +39,6 @@ const BookingSchema = new Schema<IBooking>(
 
 BookingSchema.index({ studentId: 1, status: 1 });
 BookingSchema.index({ teacherId: 1, status: 1 });
+BookingSchema.index({ classId: 1, status: 1 });
 
 export const Booking = models.Booking ?? model<IBooking>("Booking", BookingSchema);

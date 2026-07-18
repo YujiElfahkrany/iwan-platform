@@ -7,6 +7,30 @@ export interface CurriculumSyncItem {
   maxMarks: number;
 }
 
+export interface CurriculumDiffItem {
+  sessionNumber: number;
+  assignmentTitle: string;
+}
+
+/**
+ * Pure diff of two curriculum versions, keyed by
+ * `sessionNumber::assignmentTitle`. An item that changed either its
+ * sessionNumber or its title appears in both `removed` (old form) and
+ * `added` (new form).
+ */
+export function diffCurriculum(
+  oldItems: CurriculumDiffItem[],
+  newItems: CurriculumDiffItem[]
+): { added: CurriculumDiffItem[]; removed: CurriculumDiffItem[] } {
+  const key = (c: CurriculumDiffItem) => `${c.sessionNumber}::${c.assignmentTitle}`;
+  const oldKeys = new Set(oldItems.map(key));
+  const newKeys = new Set(newItems.map(key));
+  return {
+    added: newItems.filter((c) => !oldKeys.has(key(c))),
+    removed: oldItems.filter((c) => !newKeys.has(key(c))),
+  };
+}
+
 /**
  * Propagates curriculum edits to existing assignment submissions of a class.
  *

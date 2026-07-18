@@ -2,7 +2,7 @@ import { MongoMemoryServer } from "mongodb-memory-server";
 import mongoose from "mongoose";
 import { beforeAll, afterAll, beforeEach, describe, expect, it } from "vitest";
 import { AssignmentSubmission } from "@/models/AssignmentSubmission";
-import { syncSubmissionsWithCurriculum } from "@/lib/curriculumSync";
+import { diffCurriculum, syncSubmissionsWithCurriculum } from "@/lib/curriculumSync";
 
 let mongod: MongoMemoryServer;
 
@@ -114,5 +114,53 @@ describe("syncSubmissionsWithCurriculum", () => {
     ]);
 
     expect(updated).toBe(3);
+  });
+});
+
+describe("diffCurriculum", () => {
+  const item = (sessionNumber: number, assignmentTitle: string) => ({ sessionNumber, assignmentTitle });
+
+  it("reports only added items when new items are appended", () => {
+    const oldItems = [item(1, "Intro essay")];
+    const newItems = [item(1, "Intro essay"), item(2, "Reading log")];
+
+    expect(diffCurriculum(oldItems, newItems)).toEqual({
+      added: [item(2, "Reading log")],
+      removed: [],
+    });
+  });
+
+  it("reports only removed items when items are deleted", () => {
+    const oldItems = [item(1, "Intro essay"), item(2, "Reading log")];
+    const newItems = [item(1, "Intro essay")];
+
+    expect(diffCurriculum(oldItems, newItems)).toEqual({
+      added: [],
+      removed: [item(2, "Reading log")],
+    });
+  });
+
+  it("reports a retitled item as both added and removed", () => {
+    const oldItems = [item(1, "Old title")];
+    const newItems = [item(1, "New title")];
+
+    expect(diffCurriculum(oldItems, newItems)).toEqual({
+      added: [item(1, "New title")],
+      removed: [item(1, "Old title")],
+    });
+  });
+
+  it("detects a sessionNumber move as added and removed", () => {
+    const oldItems = [item(2, "Reading log")];
+    const newItems = [item(5, "Reading log")];
+
+    expect(diffCurriculum(oldItems, newItems)).toEqual({
+      added: [item(5, "Reading log")],
+      removed: [item(2, "Reading log")],
+    });
+  });
+
+  it("returns empty diffs for empty arrays", () => {
+    expect(diffCurriculum([], [])).toEqual({ added: [], removed: [] });
   });
 });

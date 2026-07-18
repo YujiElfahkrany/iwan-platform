@@ -3,29 +3,10 @@ import { connectDB } from "@/lib/mongodb";
 import { Class } from "@/models/Class";
 import { Booking } from "@/models/Booking";
 import { User } from "@/models/User";
-import { sendEmail } from "@/lib/email";
+import { sendEmail, escapeHtml } from "@/lib/email";
+import { nearestClassSessionTime } from "@/lib/schedule";
 
-const TIMEZONE = "Africa/Cairo";
 const REMINDER_MINUTES = 10;
-
-function minutesOfDay(date: Date): number {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: TIMEZONE, hour: "2-digit", minute: "2-digit", hour12: false,
-  }).formatToParts(date);
-  const h = Number(parts.find((p) => p.type === "hour")?.value ?? 0);
-  const m = Number(parts.find((p) => p.type === "minute")?.value ?? 0);
-  return (h % 24) * 60 + m;
-}
-
-function weekdayName(date: Date): string {
-  return new Intl.DateTimeFormat("en-US", { timeZone: TIMEZONE, weekday: "long" })
-    .format(date)
-    .toLowerCase();
-}
-
-function dayKey(date: Date): string {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: TIMEZONE, year: "numeric", month: "2-digit", day: "2-digit" }).format(date);
-}
 
 // Runs every 5 minutes: emails enrolled students ~10 minutes before a class session starts
 export async function GET(req: NextRequest) {
@@ -38,8 +19,6 @@ export async function GET(req: NextRequest) {
   await connectDB();
 
   const now = new Date();
-  const nowMinutes = minutesOfDay(now);
-  const today = weekdayName(now);
 
   const classes = await Class.find({
     status: { $in: ["open", "full"] },
@@ -49,17 +28,14 @@ export async function GET(req: NextRequest) {
 
   let sent = 0;
   for (const cls of classes) {
-    // Does a session occur today? Recurring classes use daysOfWeek; one-off classes use startTime's date
-    const isRecurring = cls.daysOfWeek.length > 0;
-    const occursToday = isRecurring
-      ? cls.daysOfWeek.includes(today)
-      : dayKey(new Date(cls.startTime)) === dayKey(now);
-    if (!occursToday) continue;
-
-    // Session starts within the next REMINDER_MINUTES?
-    const classMinutes = minutesOfDay(new Date(cls.startTime));
-    const diff = classMinutes - nowMinutes;
-    if (diff <= 0 || diff > REMINDER_MINUTES) continue;
+    // Session starts within the next REMINDER_MINUTES? nearestClassSessionTime
+    // handles recurring weekdays, one-off classes, and day boundaries, and
+    // matches the join-window logic used on the dashboard.
+    const nextSession = nearestClassSessionTime(cls, now);
+    if (!nextSession) continue;
+    const diffMs = nextSession.getTime() - now.getTime();
+    if (diffMs <= 0 || diffMs > REMINDER_MINUTES * 60 * 1000) continue;
+    const diff = Math.ceil(diffMs / 60000);
 
     if (cls.enrolledStudents.length === 0) continue;
 
@@ -70,9 +46,12 @@ export async function GET(req: NextRequest) {
     const bookingByStudent = new Map(bookings.map((b) => [b.studentId.toString(), b._id.toString()]));
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? req.nextUrl.origin;
 
+    const safeTitle = escapeHtml(cls.title);
+    const safeSubject = escapeHtml(cls.subject);
     const results = await Promise.allSettled(
       students.map((s) => {
         const bookingId = bookingByStudent.get(s._id.toString());
+        const safeName = escapeHtml(s.name);
         const joinLinkAr = bookingId ? `<p><a href="${appUrl}/ar/session/${bookingId}">انضم إلى الجلسة من هنا</a></p>` : "";
         const joinLinkEn = bookingId ? `<p><a href="${appUrl}/en/session/${bookingId}">Join your session here</a></p>` : "";
         return sendEmail({
@@ -81,15 +60,15 @@ export async function GET(req: NextRequest) {
           html: `
             <div dir="rtl">
               <h2>فصلك يبدأ خلال ${diff} دقائق</h2>
-              <p>مرحباً ${s.name}،</p>
-              <p>فصل «${cls.title}» (${cls.subject}) سيبدأ قريباً.</p>
+              <p>مرحباً ${safeName}،</p>
+              <p>فصل «${safeTitle}» (${safeSubject}) سيبدأ قريباً.</p>
               ${joinLinkAr}
             </div>
             <hr />
             <div dir="ltr">
               <h2>Your class starts in ${diff} minutes</h2>
-              <p>Hi ${s.name},</p>
-              <p>The class "${cls.title}" (${cls.subject}) is starting soon.</p>
+              <p>Hi ${safeName},</p>
+              <p>The class "${safeTitle}" (${safeSubject}) is starting soon.</p>
               ${joinLinkEn}
             </div>
           `,

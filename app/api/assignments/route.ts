@@ -4,7 +4,7 @@ import { connectDB } from "@/lib/mongodb";
 import { AssignmentSubmission } from "@/models/AssignmentSubmission";
 import { Class } from "@/models/Class";
 import { User } from "@/models/User";
-import { sendEmail } from "@/lib/email";
+import { sendEmail, escapeHtml } from "@/lib/email";
 
 const MAX_BYTES = 5 * 1024 * 1024;
 
@@ -59,7 +59,10 @@ export async function POST(req: NextRequest) {
     User.findById(session.user.id, { name: 1 }).lean(),
   ]);
   if (teacher) {
-    const studentName = student?.name ?? "";
+    const studentName = escapeHtml(student?.name ?? "");
+    const safeTeacherName = escapeHtml(teacher.name);
+    const safeAssignmentTitle = escapeHtml(assignment.assignmentTitle);
+    const safeClassTitle = escapeHtml(cls.title);
     try {
       await sendEmail({
         to: teacher.email,
@@ -67,15 +70,15 @@ export async function POST(req: NextRequest) {
         html: `
           <div dir="rtl">
             <h2>تسليم واجب جديد</h2>
-            <p>مرحباً ${teacher.name}،</p>
-            <p>قام الطالب <strong>${studentName}</strong> بتسليم واجب «${assignment.assignmentTitle}» (بعد الجلسة ${sessionNumber}) في فصل «${cls.title}».</p>
+            <p>مرحباً ${safeTeacherName}،</p>
+            <p>قام الطالب <strong>${studentName}</strong> بتسليم واجب «${safeAssignmentTitle}» (بعد الجلسة ${sessionNumber}) في فصل «${safeClassTitle}».</p>
             <p>سجّل الدخول إلى لوحة التحكم لمراجعة التسليم وتقييمه.</p>
           </div>
           <hr />
           <div dir="ltr">
             <h2>New assignment submission</h2>
-            <p>Hi ${teacher.name},</p>
-            <p>Student <strong>${studentName}</strong> submitted "${assignment.assignmentTitle}" (after session ${sessionNumber}) in the class "${cls.title}".</p>
+            <p>Hi ${safeTeacherName},</p>
+            <p>Student <strong>${studentName}</strong> submitted "${safeAssignmentTitle}" (after session ${sessionNumber}) in the class "${safeClassTitle}".</p>
             <p>Log in to your dashboard to review and grade the submission.</p>
           </div>
         `,
