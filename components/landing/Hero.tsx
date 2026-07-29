@@ -73,7 +73,7 @@ export function Hero() {
               </Link>
               {/* Primary buttons */}
               <div className="flex flex-col items-center gap-1.5">
-                <Button asChild size="lg" className="w-full bg-gradient-to-b from-[#d4a843] to-[#a67c2e] hover:from-[#c8973a] hover:to-[#96712a] text-white min-h-[3rem] h-auto py-2 rounded-xl text-xs font-bold shadow-md shadow-[#c8973a]/30 border-0 px-2">
+                <Button asChild size="lg" className="w-full whitespace-normal bg-gradient-to-b from-[#d4a843] to-[#a67c2e] hover:from-[#c8973a] hover:to-[#96712a] text-white min-h-[3rem] h-auto py-2 rounded-xl text-xs font-bold shadow-md shadow-[#c8973a]/30 border-0 px-2">
                   <Link href={studentHref} className="flex flex-col items-center gap-0.5 text-center leading-tight">
                     <GraduationCap className="h-4 w-4 shrink-0" />
                     <span>{t("cta_student")}</span>
@@ -84,7 +84,7 @@ export function Hero() {
                 </Link>
               </div>
               <div className="flex flex-col items-center gap-1.5">
-                <Button asChild variant="outline" size="lg" className="w-full min-h-[3rem] h-auto py-2 rounded-xl text-xs border-[#c8973a] text-[#c8973a] hover:bg-[#c8973a]/8 hover:text-[#8a6420] font-semibold px-2">
+                <Button asChild variant="outline" size="lg" className="w-full whitespace-normal min-h-[3rem] h-auto py-2 rounded-xl text-xs border-[#c8973a] text-[#c8973a] hover:bg-[#c8973a]/8 hover:text-[#8a6420] font-semibold px-2">
                   <Link href={teacherHref} className="flex flex-col items-center gap-0.5 text-center leading-tight">
                     <BookOpen className="h-4 w-4 shrink-0" />
                     <span>{t("cta_teacher")}</span>
