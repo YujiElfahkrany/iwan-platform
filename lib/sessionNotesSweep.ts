@@ -12,8 +12,13 @@ import {
 
 /**
  * Model calls per run. The Gemini free tier allows 10 requests/minute and a run
- * is a single burst, so 8 leaves headroom; anything left over waits for the
- * next run.
+ * is a single burst, so 8 leaves headroom and still finishes inside a serverless
+ * function timeout; anything left over waits for the next run.
+ *
+ * This bounds a run, not a day — how many sets of notes get written per day is
+ * the schedule's job. The Vercel schedule is daily (a Hobby-plan limit), so
+ * trigger the route more often externally if more than 8 classes a day need
+ * notes. See the cron section of SETUP.md.
  */
 export const MAX_NOTES_PER_RUN = 8;
 

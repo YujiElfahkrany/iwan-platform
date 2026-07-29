@@ -88,10 +88,31 @@ Free-tier limits worth knowing before scaling:
 
 Final captions from **group class** sessions are stored as a transcript and
 summarized into English/Arabic/Russian notes by `gemini-2.5-flash` on the free
-tier (10 requests/minute, 250/day), triggered by the hourly
-`/api/cron/session-notes` job. Notes appear in the class details section in each
-viewer's own language. Without `GEMINI_API_KEY` the cron job reports that it is
-not configured and nothing else is affected.
+tier (10 requests/minute, 250/day), triggered by the `/api/cron/session-notes`
+job. Notes appear in the class details section in each viewer's own language.
+Without `GEMINI_API_KEY` the cron job reports that it is not configured and
+nothing else is affected.
+
+### Cron schedules and how often to run them
+
+`vercel.json` schedules all three jobs **daily**, because Vercel's Hobby plan
+allows nothing more frequent — a shorter expression makes the **deployment
+fail**, not just the job. Daily is enough to be correct but slow: each run
+generates at most 8 sets of notes (one Gemini call each, sized to finish inside a
+function timeout), and a recording abandoned by a crashed tab stays unfinalized
+until the next run.
+
+If you teach more than ~8 classes a day, or want notes and recording cleanup
+within the hour, call the routes from an external scheduler as
+`/api/cron/class-reminders` is already called:
+
+```bash
+curl -H "x-cron-secret: $CRON_SECRET" https://your-domain/api/cron/session-notes
+curl -H "x-cron-secret: $CRON_SECRET" https://your-domain/api/cron/recordings-sweep
+```
+
+Both are idempotent, so running them more often is safe. On a Pro plan you can
+simply change the schedules in `vercel.json` to `0 * * * *` instead.
 
 ### 3. Stripe webhook (local)
 ```bash
