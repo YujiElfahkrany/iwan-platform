@@ -5,13 +5,13 @@ import { routing } from "@/i18n/routing";
 
 const intlMiddleware = createIntlMiddleware(routing);
 
-const protectedTeacherPaths = ["/en/dashboard/teacher", "/ar/dashboard/teacher"];
-const protectedStudentPaths = ["/en/dashboard/student", "/ar/dashboard/student"];
-const protectedAdminPaths = ["/en/dashboard/admin", "/ar/dashboard/admin"];
+const protectedTeacherPaths = routing.locales.map((l) => `/${l}/dashboard/teacher`);
+const protectedStudentPaths = routing.locales.map((l) => `/${l}/dashboard/student`);
+const protectedAdminPaths = routing.locales.map((l) => `/${l}/dashboard/admin`);
 
 function getLocale(pathname: string): string {
   const seg = pathname.split("/")[1];
-  return seg === "en" || seg === "ar" ? seg : "ar";
+  return (routing.locales as readonly string[]).includes(seg) ? seg : routing.defaultLocale;
 }
 
 export default async function proxy(req: NextRequest) {

@@ -9,7 +9,10 @@
     "logout": "تسجيل الخروج",
     "role_admin": "مدير",
     "role_teacher": "معلم",
-    "role_student": "طالب"
+    "role_student": "طالب",
+    "student_portal": "بوابة الطلاب",
+    "teacher_portal": "بوابة المعلمين",
+    "brand": "أكاديمية إيوان"
   },
   "hero": {
     "title": "تعلّم على يد أفضل المعلمين",
@@ -147,7 +150,8 @@
     "confirm_new_password": "تأكيد كلمة المرور الجديدة",
     "password_reset_success": "تمت إعادة تعيين كلمة المرور. يمكنك الآن تسجيل الدخول.",
     "reset_link_invalid": "رابط إعادة التعيين غير صالح أو منتهي الصلاحية. يرجى طلب رابط جديد.",
-    "reset_failed": "فشلت إعادة تعيين كلمة المرور. يرجى المحاولة مرة أخرى."
+    "reset_failed": "فشلت إعادة تعيين كلمة المرور. يرجى المحاولة مرة أخرى.",
+    "return_home": "العودة إلى الصفحة الرئيسية"
   },
   "student_form": {
     "step1_title": "بياناتك",
@@ -198,7 +202,12 @@
     "bio_placeholder": "أخبر الطلاب عن نفسك...",
     "hourly_rate": "السعر بالساعة (جنيه)",
     "languages": "لغات التدريس",
-    "timezone": "منطقتك الزمنية"
+    "timezone": "منطقتك الزمنية",
+    "subjects_placeholder": "اكتب مادة واضغط Enter",
+    "credential_label": "وثيقة المؤهل",
+    "credential_hint": "ارفع صورة أو ملف PDF لشهادتك أو مؤهلك التدريسي (الحد الأقصى 5 ميجابايت)",
+    "credential_uploaded": "تم رفع الملف ✓",
+    "credential_upload_btn": "انقر لرفع الوثيقة"
   },
   "dashboard": {
     "welcome": "أهلاً بعودتك، {name}",

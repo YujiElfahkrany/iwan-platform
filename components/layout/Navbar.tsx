@@ -10,10 +10,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Menu, GraduationCap } from "lucide-react";
+import { Menu, GraduationCap, Globe } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+
+// Language names are always shown in their own language, so they live here
+// rather than in the translation catalogs.
+const LANGUAGES = [
+  { code: "ar", label: "العربية" },
+  { code: "en", label: "English" },
+  { code: "ru", label: "Русский" },
+] as const;
 
 export function Navbar() {
   const t = useTranslations("nav");
@@ -23,8 +31,8 @@ export function Navbar() {
   const { data: session } = useSession();
   const [open, setOpen] = useState(false);
 
-  function switchLocale() {
-    router.push(pathname, { locale: locale === "en" ? "ar" : "en" });
+  function switchLocale(target: string) {
+    router.push(pathname, { locale: target });
   }
 
   const navLinks = [
@@ -56,26 +64,34 @@ export function Navbar() {
                   className="hidden sm:flex items-center gap-2 text-[#2c1f12]/70 hover:text-[#c8973a] transition-colors font-medium border-r border-[#c8973a]/30 pr-4"
                 >
                   <Image src="/student-login.png" alt="الطالب" width={34} height={44} className="object-contain" unoptimized />
-                  {locale === "ar" ? "بوابة الطلاب" : "Student Portal"}
+                  {t("student_portal")}
                 </Link>
                 <Link
                   href="/auth/login?role=teacher"
                   className="hidden sm:flex items-center gap-2 text-[#2c1f12]/70 hover:text-[#c8973a] transition-colors font-medium border-r border-[#c8973a]/30 pr-4"
                 >
                   <Image src="/teacher-login.png" alt="المعلم" width={34} height={44} className="object-contain" unoptimized />
-                  {locale === "ar" ? "بوابة المعلمين" : "Teacher Portal"}
+                  {t("teacher_portal")}
                 </Link>
               </>
             )}
-            <button
-              onClick={switchLocale}
-              className="flex items-center gap-1.5 text-[#2c1f12]/60 hover:text-[#c8973a] transition-colors text-xs"
-            >
-              <span className="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px]">
-                {locale === "ar" ? "E" : "ع"}
-              </span>
-              {locale === "ar" ? "En" : "عر"}
-            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center gap-1.5 text-[#2c1f12]/60 hover:text-[#c8973a] transition-colors text-xs outline-none cursor-pointer">
+                <Globe className="h-4 w-4" />
+                {LANGUAGES.find((l) => l.code === locale)?.label}
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                {LANGUAGES.map((l) => (
+                  <DropdownMenuItem
+                    key={l.code}
+                    disabled={l.code === locale}
+                    onClick={() => switchLocale(l.code)}
+                  >
+                    {l.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* CENTER: desktop nav links */}
@@ -124,17 +140,28 @@ export function Navbar() {
                     <>
                       <Link href="/auth/login?role=student" className="flex items-center gap-2 text-lg font-medium text-[#2c1f12]/70 hover:text-[#c8973a]" onClick={() => setOpen(false)}>
                         <Image src="/student-login.png" alt="" width={24} height={30} className="object-contain" unoptimized />
-                        {locale === "ar" ? "بوابة الطلاب" : "Student Portal"}
+                        {t("student_portal")}
                       </Link>
                       <Link href="/auth/login?role=teacher" className="flex items-center gap-2 text-lg font-medium text-[#2c1f12]/70 hover:text-[#c8973a]" onClick={() => setOpen(false)}>
                         <Image src="/teacher-login.png" alt="" width={24} height={30} className="object-contain" unoptimized />
-                        {locale === "ar" ? "بوابة المعلمين" : "Teacher Portal"}
+                        {t("teacher_portal")}
                       </Link>
                     </>
                   )}
-                  <button onClick={switchLocale} className="text-start text-sm text-[#2c1f12]/60 hover:text-[#c8973a]">
-                    {locale === "ar" ? "English" : "عربي"}
-                  </button>
+                  <div className="flex gap-5">
+                    {LANGUAGES.filter((l) => l.code !== locale).map((l) => (
+                      <button
+                        key={l.code}
+                        onClick={() => {
+                          switchLocale(l.code);
+                          setOpen(false);
+                        }}
+                        className="text-start text-sm text-[#2c1f12]/60 hover:text-[#c8973a]"
+                      >
+                        {l.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </SheetContent>
             </Sheet>
@@ -166,7 +193,7 @@ export function Navbar() {
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <span className="text-[#2c1f12] font-bold text-base leading-tight hidden sm:inline">
-                {locale === "ar" ? "أكاديمية إيوان" : "Iwan Academy"}
+                {t("brand")}
               </span>
               <Image
                 src="/logo.png"

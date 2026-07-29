@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { nearestClassSessionTime, sessionJoinInfo } from "@/lib/schedule";
+import { classSessionOnDay, nearestClassSessionTime, sessionJoinInfo } from "@/lib/schedule";
 
 // All instants are chosen at 10:00 UTC (13:00 in Africa/Cairo during summer,
 // UTC+3), so the Cairo calendar day and weekday match the UTC ones and the
@@ -125,5 +125,57 @@ describe("sessionJoinInfo", () => {
       sessionTime: null,
       canJoin: false,
     });
+  });
+});
+
+describe("classSessionOnDay", () => {
+  it("returns the occurrence when the class recurs on the day's Cairo weekday", () => {
+    const cls = {
+      startTime: "2026-07-06T10:30:00.000Z", // Monday
+      daysOfWeek: ["monday"],
+    };
+    // day: Monday 2026-07-20 08:00 UTC (11:00 Cairo)
+    expect(classSessionOnDay(cls, d("2026-07-20T08:00:00.000Z"))).toEqual(
+      d("2026-07-20T10:30:00.000Z")
+    );
+  });
+
+  it("returns null when the class does not recur on the day's weekday", () => {
+    const cls = {
+      startTime: "2026-07-06T10:30:00.000Z",
+      daysOfWeek: ["wednesday"],
+    };
+    // Monday 2026-07-20 — class only meets Wednesdays.
+    expect(classSessionOnDay(cls, d("2026-07-20T08:00:00.000Z"))).toBeNull();
+  });
+
+  it("returns a one-off class only on its own Cairo day", () => {
+    const cls = { startTime: "2026-07-20T10:00:00.000Z" };
+    expect(classSessionOnDay(cls, d("2026-07-20T06:00:00.000Z"))).toEqual(
+      d("2026-07-20T10:00:00.000Z")
+    );
+    expect(classSessionOnDay(cls, d("2026-07-21T06:00:00.000Z"))).toBeNull();
+  });
+
+  it("returns null on a matching weekday before the course has started", () => {
+    const cls = {
+      startTime: "2026-08-03T10:00:00.000Z", // course starts Monday Aug 3
+      daysOfWeek: ["monday"],
+    };
+    // Monday July 20 is before the course begins.
+    expect(classSessionOnDay(cls, d("2026-07-20T08:00:00.000Z"))).toBeNull();
+  });
+
+  it("finds a session whose UTC date differs from its Cairo day (midnight wraparound)", () => {
+    // 22:30 UTC = 01:30 Cairo on the NEXT calendar day, so the occurrence's
+    // UTC date is one day behind its Cairo date.
+    const cls = {
+      startTime: "2026-07-05T22:30:00.000Z", // Monday 01:30 Cairo (Jul 6)
+      daysOfWeek: ["monday"],
+    };
+    // day: 23:00 UTC Sunday Jul 19 = 02:00 Cairo Monday Jul 20.
+    expect(classSessionOnDay(cls, d("2026-07-19T23:00:00.000Z"))).toEqual(
+      d("2026-07-19T22:30:00.000Z")
+    );
   });
 });

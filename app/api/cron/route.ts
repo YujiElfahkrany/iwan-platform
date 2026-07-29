@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import { Booking } from "@/models/Booking";
+import { Class } from "@/models/Class";
 import { Slot } from "@/models/Slot";
 import { User } from "@/models/User";
-import { sendEmail } from "@/lib/email";
-import { PLATFORM_TIMEZONE } from "@/lib/datetime";
+import { sendEmail, escapeHtml } from "@/lib/email";
+import { formatSessionDate, PLATFORM_TIMEZONE } from "@/lib/datetime";
+import { classSessionOnDay } from "@/lib/schedule";
 
 // Vercel Cron: runs daily at 08:00 UTC
 export async function GET(req: NextRequest) {
@@ -57,5 +59,59 @@ export async function GET(req: NextRequest) {
     sent++;
   }
 
-  return NextResponse.json({ reminders_sent: sent });
+  // Group classes: remind every participant (enrolled students + the teacher)
+  // who has a class session on the reminded day — the same day-ahead
+  // semantics as the slot reminders above.
+  const tomorrowRef = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  const classes = await Class.find({ status: { $in: ["open", "full"] } }).lean();
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? req.nextUrl.origin;
+
+  let classEmails = 0;
+  for (const cls of classes) {
+    const sessionTime = classSessionOnDay(cls, tomorrowRef);
+    if (!sessionTime) continue;
+
+    const participants = await User.find(
+      { _id: { $in: [...cls.enrolledStudents, cls.teacherId] } },
+      { email: 1, name: 1, role: 1 }
+    ).lean();
+    if (participants.length === 0) continue;
+
+    const safeTitle = escapeHtml(cls.title);
+    const safeSubject = escapeHtml(cls.subject);
+    const timeAr = formatSessionDate(sessionTime, "ar", PLATFORM_TIMEZONE);
+    const timeEn = formatSessionDate(sessionTime, "en", PLATFORM_TIMEZONE);
+
+    const results = await Promise.allSettled(
+      participants.map((p) => {
+        const dashboardPath = p.role === "teacher" ? "dashboard/teacher" : "dashboard/student";
+        const safeName = escapeHtml(p.name);
+        return sendEmail({
+          to: p.email,
+          subject: `تذكير بفصل الغد | Class tomorrow — ${cls.title}`,
+          html: `
+            <div dir="rtl">
+              <h2>تذكير: فصلك غداً</h2>
+              <p>مرحباً ${safeName}،</p>
+              <p>فصل «${safeTitle}» (${safeSubject}) سيُعقد غداً في <strong>${timeAr}</strong>.</p>
+              <p><a href="${appUrl}/ar/${dashboardPath}">افتح لوحة التحكم للانضمام</a></p>
+            </div>
+            <hr />
+            <div dir="ltr">
+              <h2>Reminder: your class meets tomorrow</h2>
+              <p>Hi ${safeName},</p>
+              <p>The class "${safeTitle}" (${safeSubject}) meets tomorrow at <strong>${timeEn}</strong>.</p>
+              <p><a href="${appUrl}/en/${dashboardPath}">Open your dashboard to join</a></p>
+            </div>
+          `,
+        });
+      })
+    );
+    for (const r of results) {
+      if (r.status === "rejected") console.error("Failed to send class day reminder:", r.reason);
+      else classEmails++;
+    }
+  }
+
+  return NextResponse.json({ reminders_sent: sent, class_reminder_emails: classEmails });
 }

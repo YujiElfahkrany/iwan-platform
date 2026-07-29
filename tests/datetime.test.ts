@@ -26,4 +26,16 @@ describe("formatSessionDate", () => {
     const s = formatSessionDate(ISO, "ar", PLATFORM_TIMEZONE);
     expect(s).toContain("يوليو");
   });
+
+  it("uses Russian locale formatting for ru", () => {
+    const s = formatSessionDate(ISO, "ru", PLATFORM_TIMEZONE);
+    expect(s).toContain("июл");
+  });
+
+  it("falls back to English formatting for unknown locales", () => {
+    // Guards the fallback path: an unmapped locale must never throw or
+    // silently switch language based on server environment.
+    const s = formatSessionDate(ISO, "fr", PLATFORM_TIMEZONE);
+    expect(s).toContain("Jul");
+  });
 });

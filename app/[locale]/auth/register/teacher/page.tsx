@@ -16,7 +16,7 @@ import { Loader2, ChevronLeft, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
 import PhoneInput from "react-phone-number-input";
-import arLabels from "react-phone-number-input/locale/ar.json";
+import { phoneInputLabels } from "@/lib/phoneLabels";
 import "react-phone-number-input/style.css";
 import type { E164Number } from "libphonenumber-js/core";
 import { LANGUAGES } from "@/lib/constants";
@@ -169,7 +169,7 @@ export default function TeacherRegisterPage() {
           <Link href="/" className="flex items-center gap-1.5 mb-2 w-fit text-[#2c1f12]/60 hover:text-[#c8973a] transition-colors text-sm">
             <ChevronLeft className={`h-4 w-4 ${locale === "ar" ? "rotate-180" : ""}`} />
             <Image src="/logo.png" alt="Iwan" width={44} height={44} unoptimized />
-            <span>{locale === "ar" ? "العودة إلى الصفحة الرئيسية" : "Return to Homepage"}</span>
+            <span>{ta("return_home")}</span>
           </Link>
           <CardTitle className="text-xl">{ta("teacher")}</CardTitle>
           <StepProgress current={step} total={3} titles={stepTitles} />
@@ -235,7 +235,7 @@ export default function TeacherRegisterPage() {
                 <PhoneInput
                   international
                   defaultCountry="EG"
-                  labels={locale === "ar" ? arLabels : undefined}
+                  labels={phoneInputLabels(locale)}
                   value={data.phone as E164Number}
                   onChange={(v) => update("phone", v ?? "")}
                   className="phone-input flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
@@ -273,7 +273,7 @@ export default function TeacherRegisterPage() {
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label>{t("subjects")}</Label>
-                <TagInput value={data.subjects} onChange={(v) => update("subjects", v)} placeholder={locale === "ar" ? "اكتب مادة واضغط Enter" : "Type subject and press Enter"} />
+                <TagInput value={data.subjects} onChange={(v) => update("subjects", v)} placeholder={t("subjects_placeholder")} />
               </div>
               <div className="space-y-2">
                 <Label>{t("experience")}</Label>
@@ -307,11 +307,9 @@ export default function TeacherRegisterPage() {
             <div className="space-y-4">
               {/* Credential upload */}
               <div className="space-y-2">
-                <Label>{locale === "ar" ? "وثيقة المؤهل" : "Credential Document"}</Label>
+                <Label>{t("credential_label")}</Label>
                 <p className="text-xs text-muted-foreground">
-                  {locale === "ar"
-                    ? "ارفع صورة أو ملف PDF لشهادتك أو مؤهلك التدريسي (الحد الأقصى 5 ميجابايت)"
-                    : "Upload a photo or PDF of your teaching certificate or qualification (max 5 MB)"}
+                  {t("credential_hint")}
                 </p>
                 <input
                   ref={credentialInputRef}
@@ -327,7 +325,7 @@ export default function TeacherRegisterPage() {
                       <img src={credentialPreview} alt="credential" className="h-32 w-auto rounded-lg border object-contain" />
                     ) : (
                       <div className="h-32 w-48 rounded-lg border bg-muted flex items-center justify-center text-sm text-muted-foreground">
-                        {locale === "ar" ? "تم رفع الملف ✓" : "File uploaded ✓"}
+                        {t("credential_uploaded")}
                       </div>
                     )}
                     <button
@@ -345,7 +343,7 @@ export default function TeacherRegisterPage() {
                     className="flex items-center gap-2 border-2 border-dashed border-[#c8973a]/40 hover:border-[#c8973a] rounded-xl px-6 py-4 text-sm text-muted-foreground hover:text-[#c8973a] transition-colors w-full justify-center"
                   >
                     <Upload className="h-5 w-5" />
-                    {locale === "ar" ? "انقر لرفع الوثيقة" : "Click to upload document"}
+                    {t("credential_upload_btn")}
                   </button>
                 )}
               </div>

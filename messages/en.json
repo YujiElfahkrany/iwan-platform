@@ -9,7 +9,10 @@
     "logout": "Log Out",
     "role_admin": "Administrator",
     "role_teacher": "Teacher",
-    "role_student": "Student"
+    "role_student": "Student",
+    "student_portal": "Student Portal",
+    "teacher_portal": "Teacher Portal",
+    "brand": "Iwan Academy"
   },
   "hero": {
     "title": "Learn from the Best Teachers",
@@ -147,7 +150,8 @@
     "confirm_new_password": "Confirm New Password",
     "password_reset_success": "Your password has been reset. You can now log in.",
     "reset_link_invalid": "This reset link is invalid or has expired. Please request a new one.",
-    "reset_failed": "Failed to reset password. Please try again."
+    "reset_failed": "Failed to reset password. Please try again.",
+    "return_home": "Return to Homepage"
   },
   "student_form": {
     "step1_title": "Your Details",
@@ -198,7 +202,12 @@
     "bio_placeholder": "Tell students about yourself...",
     "hourly_rate": "Hourly Rate (LE)",
     "languages": "Teaching Languages",
-    "timezone": "Your Timezone"
+    "timezone": "Your Timezone",
+    "subjects_placeholder": "Type subject and press Enter",
+    "credential_label": "Credential Document",
+    "credential_hint": "Upload a photo or PDF of your teaching certificate or qualification (max 5 MB)",
+    "credential_uploaded": "File uploaded ✓",
+    "credential_upload_btn": "Click to upload document"
   },
   "dashboard": {
     "welcome": "Welcome back, {name}",

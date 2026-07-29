@@ -1,11 +1,11 @@
 ---
 name: project-overview
-description: iwan-platform — Arabic/English tutoring platform tech stack, key models, and feature state
+description: iwan-platform — Arabic/English/Russian tutoring platform tech stack, key models, and feature state
 metadata:
   type: project
 ---
 
-Next.js 15 app (app router), MongoDB/Mongoose, next-intl (ar/en), NextAuth, Agora RTC for video (agora-rtc-react, token endpoint at /api/agora/token), Tailwind + shadcn/ui.
+Next.js 15 app (app router), MongoDB/Mongoose, next-intl (ar/en/ru, default ar), NextAuth, Agora RTC for video (agora-rtc-react, token endpoint at /api/agora/token), Tailwind + shadcn/ui.
 
 **Key models:** User, TeacherProfile, StudentProfile, Class (now has totalSessions + curriculum), Booking, Slot, TopUpRequest, AssignmentSubmission (new).
 
@@ -19,6 +19,6 @@ Next.js 15 app (app router), MongoDB/Mongoose, next-intl (ar/en), NextAuth, Agor
 - Admin delete: DELETE `/api/admin/delete` handles `type: "class"|"user"`, cascades to submissions/profiles/bookings.
 - Admin teachers/classes pages now client-side with delete buttons.
 - Student bookings and browse-teachers pages fully translated (no hardcoded English).
-- All i18n strings in `messages/en.json` and `messages/ar.json`.
+- All i18n strings in `messages/en.json`, `messages/ar.json`, and `messages/ru.json` (Russian added 2026-07-29; tests/messages.test.ts enforces key parity).
 
 **Why:** User wants course-style classes with assignment tracking, not just one-off sessions.

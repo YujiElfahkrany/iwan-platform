@@ -15,7 +15,7 @@ import { Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
 import PhoneInput from "react-phone-number-input";
-import arLabels from "react-phone-number-input/locale/ar.json";
+import { phoneInputLabels } from "@/lib/phoneLabels";
 import "react-phone-number-input/style.css";
 import type { E164Number } from "libphonenumber-js/core";
 import { LANGUAGES, AGE_MIN, AGE_MAX } from "@/lib/constants";
@@ -167,7 +167,7 @@ export default function StudentRegisterPage() {
           <Link href="/" className="flex items-center gap-1.5 mb-2 w-fit text-[#2c1f12]/60 hover:text-[#c8973a] transition-colors text-sm">
             <ChevronLeft className={`h-4 w-4 ${locale === "ar" ? "rotate-180" : ""}`} />
             <Image src="/logo.png" alt="Iwan" width={44} height={44} unoptimized />
-            <span>{locale === "ar" ? "العودة إلى الصفحة الرئيسية" : "Return to Homepage"}</span>
+            <span>{ta("return_home")}</span>
           </Link>
           <CardTitle className="text-xl">{ta("student")}</CardTitle>
           <StepProgress current={step} total={3} titles={stepTitles} />
@@ -240,7 +240,7 @@ export default function StudentRegisterPage() {
                 <PhoneInput
                   international
                   defaultCountry="EG"
-                  labels={locale === "ar" ? arLabels : undefined}
+                  labels={phoneInputLabels(locale)}
                   value={data.phone as E164Number}
                   onChange={(val) => update("phone", val ?? "")}
                   className="phone-input flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs"

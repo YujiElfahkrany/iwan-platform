@@ -6,6 +6,47 @@ function weekdayInTz(date: Date): string {
     .toLowerCase();
 }
 
+function sameDayInTz(a: Date, b: Date): boolean {
+  const fmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: TIMEZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  return fmt.format(a) === fmt.format(b);
+}
+
+/**
+ * The class session occurrence that falls on the same platform-timezone
+ * calendar day as `day`, or null if the class has no session that day.
+ * Follows the same occurrence convention as nearestClassSessionTime:
+ * recurring classes repeat on daysOfWeek at startTime's time-of-day.
+ */
+export function classSessionOnDay(
+  cls: { startTime: Date | string; daysOfWeek?: string[] },
+  day: Date
+): Date | null {
+  const start = new Date(cls.startTime);
+  const days = cls.daysOfWeek ?? [];
+  if (days.length === 0) {
+    return sameDayInTz(start, day) ? start : null;
+  }
+
+  // An occurrence keeps startTime's UTC time-of-day, so the occurrence on
+  // `day`'s local calendar day can sit on the UTC date before or after it
+  // (a session at 01:30 local has the previous day's UTC date). Checking
+  // the three surrounding UTC dates covers every alignment.
+  for (let i = -1; i <= 1; i++) {
+    const candidate = new Date(day);
+    candidate.setUTCDate(candidate.getUTCDate() + i);
+    candidate.setUTCHours(start.getUTCHours(), start.getUTCMinutes(), start.getUTCSeconds(), 0);
+    if (candidate.getTime() < start.getTime()) continue; // course hasn't started yet
+    if (!days.includes(weekdayInTz(candidate))) continue;
+    if (sameDayInTz(candidate, day)) return candidate;
+  }
+  return null;
+}
+
 /**
  * The class session occurrence nearest to `now`.
  * One-off classes use their startTime; recurring classes repeat on daysOfWeek
