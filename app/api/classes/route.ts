@@ -4,10 +4,13 @@ import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/mongodb";
 import { Class } from "@/models/Class";
 import { generateRoomName } from "@/lib/video";
-import { studentClassPrice } from "@/lib/pricing";
+import { serializeClass } from "@/lib/classResponse";
 
 export async function GET(req: NextRequest) {
   try {
+    const session = await auth();
+    if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     await connectDB();
     const { searchParams } = new URL(req.url);
     const teacherId = searchParams.get("teacherId");
@@ -20,54 +23,25 @@ export async function GET(req: NextRequest) {
 
     // Teacher's own classes: no startTime cutoff, so past/today classes remain visible
     if (mine === "true") {
-      const session = await auth();
-      if (!session?.user || session.user.role !== "teacher") {
+      if (session.user.role !== "teacher") {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
       const classes = await Class.find({ teacherId: session.user.id }).sort({ startTime: -1 }).lean();
-      return NextResponse.json(
-        classes.map((c) => ({
-          ...c,
-          _id: c._id.toString(),
-          teacherId: c.teacherId.toString(),
-          enrolledStudents: c.enrolledStudents.map((id: { toString: () => string }) => id.toString()),
-          studentPrice: studentClassPrice(c.price),
-        }))
-      );
+      return NextResponse.json(classes.map(serializeClass));
     }
 
     if (enrolled === "true") {
-      const session = await auth();
-      if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       const studentObjId = new mongoose.Types.ObjectId(session.user.id);
       filter.enrolledStudents = studentObjId;
-      console.log("[classes/enrolled] user:", session.user.id, "filter:", JSON.stringify(filter));
       const classes = await Class.find(filter).sort({ startTime: 1 }).lean();
-      console.log("[classes/enrolled] found:", classes.length, "classes");
-      return NextResponse.json(
-        classes.map((c) => ({
-          ...c,
-          _id: c._id.toString(),
-          teacherId: c.teacherId.toString(),
-          enrolledStudents: c.enrolledStudents.map((id: { toString: () => string }) => id.toString()),
-          studentPrice: studentClassPrice(c.price),
-        }))
-      );
+      return NextResponse.json(classes.map(serializeClass));
     }
 
     // Visibility is status-based: recurring courses stay listed after their first session starts
     const classes = await Class.find({ ...filter, status: { $in: ["open", "full"] } })
       .sort({ startTime: 1 })
       .lean();
-    return NextResponse.json(
-      classes.map((c) => ({
-        ...c,
-        _id: c._id.toString(),
-        teacherId: c.teacherId.toString(),
-        enrolledStudents: c.enrolledStudents.map((id: { toString: () => string }) => id.toString()),
-        studentPrice: studentClassPrice(c.price),
-      }))
-    );
+    return NextResponse.json(classes.map(serializeClass));
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

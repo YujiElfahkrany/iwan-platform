@@ -36,6 +36,62 @@ Required variables:
 | `NEXT_PUBLIC_APP_URL` | `http://localhost:3000` (dev) or your Vercel URL |
 | `NEXT_PUBLIC_AGORA_APP_ID` | Agora Console → Project → App ID |
 | `AGORA_APP_CERTIFICATE` | Agora Console → Project → Primary Certificate |
+| `R2_ACCOUNT_ID` | Cloudflare Dashboard → R2 → Account ID (session recording) |
+| `R2_ACCESS_KEY_ID` | Cloudflare → R2 → Manage API Tokens → Object Read & Write |
+| `R2_SECRET_ACCESS_KEY` | Shown once when the R2 API token is created |
+| `R2_BUCKET_NAME` | The R2 bucket you created for recordings |
+| `GEMINI_API_KEY` | Google AI Studio → Get API key (AI session notes) |
+| `CRON_SECRET` | Run: `openssl rand -base64 32` (shared by all cron routes) |
+
+### Session recording (Cloudflare R2)
+
+Recordings are composited and uploaded by the teacher's browser straight to R2,
+so the app server never proxies video. Two bucket settings are required:
+
+1. **CORS** — allow the browser to `PUT` upload parts:
+   ```json
+   [
+     {
+       "AllowedOrigins": ["https://your-domain.vercel.app", "http://localhost:3000"],
+       "AllowedMethods": ["PUT"],
+       "AllowedHeaders": ["content-type"],
+       "MaxAgeSeconds": 3600
+     }
+   ]
+   ```
+   No `ExposeHeaders` entry is needed: the server finalizes each upload via
+   ListParts, so the browser never reads ETags.
+2. **Lifecycle rules** — keep storage inside the 10 GB free tier:
+   - delete objects under the `recordings/` prefix **7 days** after creation;
+   - keep R2's default rule that aborts incomplete multipart uploads after 7 days.
+
+Free-tier budget: 720p recording is ~600 MB/hour, so 10 GB holds ~16 hours.
+With the 7-day retention above, roughly **2 hours of recording per day** is
+sustainable indefinitely. Playback costs nothing extra — R2 has no egress fees.
+
+### Live captions (Agora Signaling)
+
+Captions travel over Agora Signaling (RTM), which must be **enabled for the
+project** in Agora Console → your project → Signaling (Signaling 2.x, free
+package). No extra credentials: the existing App ID and certificate are used.
+If Signaling is left disabled the video call still works and the captions menu
+simply reports itself unavailable.
+
+Free-tier limits worth knowing before scaling:
+
+| Limit | Value | Consequence |
+|---|---|---|
+| Messages | 1M / month | ~4,500 msgs per captioned lesson-hour → ~220 lesson-hours/month. Sending only final captions (no interim updates) drops this to ~700/hour. |
+| Peak concurrent users | **20** | Roughly 10 simultaneous captioned lessons platform-wide. **Exceeding a free-tier limit suspends Signaling**, so move to a paid Signaling package before growing past that. |
+
+### AI session notes (Gemini free tier)
+
+Final captions from **group class** sessions are stored as a transcript and
+summarized into English/Arabic/Russian notes by `gemini-2.5-flash` on the free
+tier (10 requests/minute, 250/day), triggered by the hourly
+`/api/cron/session-notes` job. Notes appear in the class details section in each
+viewer's own language. Without `GEMINI_API_KEY` the cron job reports that it is
+not configured and nothing else is affected.
 
 ### 3. Stripe webhook (local)
 ```bash

@@ -4,23 +4,20 @@ import { connectDB } from "@/lib/mongodb";
 import { Class } from "@/models/Class";
 import { User } from "@/models/User";
 import { sendEmail, escapeHtml } from "@/lib/email";
-import { studentClassPrice } from "@/lib/pricing";
+import { serializeClass } from "@/lib/classResponse";
 import { diffCurriculum, syncSubmissionsWithCurriculum } from "@/lib/curriculumSync";
 import { PLATFORM_TIMEZONE } from "@/lib/datetime";
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const session = await auth();
+    if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     await connectDB();
     const { id } = await params;
     const cls = await Class.findById(id).lean();
     if (!cls) return NextResponse.json({ error: "Not found" }, { status: 404 });
-    return NextResponse.json({
-      ...cls,
-      _id: cls._id.toString(),
-      teacherId: cls.teacherId.toString(),
-      enrolledStudents: cls.enrolledStudents.map((s: { toString: () => string }) => s.toString()),
-      studentPrice: studentClassPrice(cls.price),
-    });
+    return NextResponse.json(serializeClass(cls));
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

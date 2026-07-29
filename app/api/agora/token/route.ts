@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
-import { RtcTokenBuilder, RtcRole } from "agora-token";
+import { RtcTokenBuilder, RtcRole, RtmTokenBuilder } from "agora-token";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/mongodb";
 import { Booking } from "@/models/Booking";
@@ -47,7 +47,11 @@ export async function POST(req: NextRequest) {
       TOKEN_TTL_SECONDS
     );
 
-    return NextResponse.json({ appId, channel, token, uid });
+    // Separate RTM token: captions are broadcast over the RTM signalling
+    // channel, which does not accept the RTC token.
+    const rtmToken = RtmTokenBuilder.buildToken(appId, appCertificate, uid, TOKEN_TTL_SECONDS);
+
+    return NextResponse.json({ appId, channel, token, rtmToken, uid });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

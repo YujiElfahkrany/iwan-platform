@@ -12,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Loader2, Plus, Users, Clock, Trash2, BookOpen, ChevronRight, ChevronLeft, Pencil } from "lucide-react";
+import { ClassSessionNotes } from "@/components/class/ClassSessionNotes";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -441,6 +442,7 @@ export default function TeacherClassesPage() {
                 <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                   <div className="h-full bg-primary rounded-full" style={{ width: `${(cls.enrolledStudents.length / cls.maxStudents) * 100}%` }} />
                 </div>
+                <ClassSessionNotes classId={cls._id} />
               </CardContent>
             </Card>
           ))}

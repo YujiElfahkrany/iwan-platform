@@ -3,6 +3,14 @@
     {
       "path": "/api/cron",
       "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/cron/recordings-sweep",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/session-notes",
+      "schedule": "15 * * * *"
     }
   ]
 }

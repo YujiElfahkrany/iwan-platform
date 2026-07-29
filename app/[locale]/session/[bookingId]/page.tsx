@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { connectDB } from "@/lib/mongodb";
 import { Booking } from "@/models/Booking";
 import { VideoRoom } from "@/components/video/VideoRoom";
@@ -28,16 +29,25 @@ export default async function SessionPage({ params }: { params: Promise<{ bookin
     redirect(`/${locale}/dashboard/${session.user.role}`);
   }
 
+  const t = await getTranslations("session");
+  // Recording is the teacher's call, and that is a property of this booking —
+  // not of the account's role.
+  const isTeacher = booking.teacherId.toString() === session.user.id;
+
   return (
     <div className="h-screen flex flex-col bg-[#0f172a]">
-      {/* Minimal top bar */}
-      <div className="flex items-center justify-between px-4 py-2 bg-[#1e293b] border-b border-white/10">
-        <Button variant="ghost" size="sm" className="text-white/70 hover:text-white hover:bg-white/10" asChild>
+      {/* Minimal top bar — wraps instead of clipping both labels at once, since
+          the Arabic and Russian ones are longer than the English */}
+      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2 bg-[#1e293b] border-b border-white/10">
+        <Button variant="ghost" size="sm" className="text-white/70 hover:text-white hover:bg-white/10 min-w-0" asChild>
           <Link href={`/dashboard/${session.user.role}`}>
-            <ArrowLeft className="h-4 w-4 me-1.5" />Back to Dashboard
+            <ArrowLeft className="h-4 w-4 me-1.5 shrink-0" />
+            <span className="truncate">{t("back_to_dashboard")}</span>
           </Link>
         </Button>
-        <p className="text-white/50 text-xs">Room: {booking.meetingRoomName}</p>
+        <p className="text-white/50 text-xs truncate">
+          {t("room_label")}: {booking.meetingRoomName}
+        </p>
       </div>
 
       {/* Video call fills remaining height */}
@@ -46,6 +56,9 @@ export default async function SessionPage({ params }: { params: Promise<{ bookin
           bookingId={bookingId}
           displayName={session.user.name ?? session.user.email ?? "User"}
           leaveHref={`/dashboard/${session.user.role}`}
+          isTeacher={isTeacher}
+          teacherUid={booking.teacherId.toString()}
+          isClass={booking.type === "class"}
         />
       </div>
     </div>

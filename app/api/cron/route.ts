@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
+import { isAuthorizedCronRequest } from "@/lib/cronAuth";
 import { Booking } from "@/models/Booking";
 import { Class } from "@/models/Class";
 import { Slot } from "@/models/Slot";
@@ -10,9 +11,7 @@ import { classSessionOnDay } from "@/lib/schedule";
 
 // Vercel Cron: runs daily at 08:00 UTC
 export async function GET(req: NextRequest) {
-  // Verify cron secret header
-  const secret = req.headers.get("x-cron-secret");
-  if (secret !== process.env.CRON_SECRET) {
+  if (!isAuthorizedCronRequest(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

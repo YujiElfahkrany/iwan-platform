@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
+import { isAuthorizedCronRequest } from "@/lib/cronAuth";
 import { Class } from "@/models/Class";
 import { Booking } from "@/models/Booking";
 import { User } from "@/models/User";
@@ -10,9 +11,7 @@ const REMINDER_MINUTES = 10;
 
 // Runs every 5 minutes: emails enrolled students ~10 minutes before a class session starts
 export async function GET(req: NextRequest) {
-  const secret = req.headers.get("x-cron-secret");
-  const bearer = req.headers.get("authorization");
-  if (secret !== process.env.CRON_SECRET && bearer !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!isAuthorizedCronRequest(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

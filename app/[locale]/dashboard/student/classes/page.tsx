@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Loader2, Users, Clock, Search } from "lucide-react";
+import { ClassSessionNotes } from "@/components/class/ClassSessionNotes";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
@@ -125,6 +126,8 @@ export default function BrowseClassesPage() {
                     {enrollingId === cls._id && <Loader2 className="h-3.5 w-3.5 animate-spin me-1.5" />}
                     {isEnrolled ? td("enrolled_classes") : isFull ? t("full") : t("enroll")}
                   </Button>
+                  {/* Notes are only visible to the students who attended the class. */}
+                  {!!isEnrolled && <ClassSessionNotes classId={cls._id} />}
                 </CardContent>
               </Card>
             );

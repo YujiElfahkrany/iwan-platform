@@ -1,18 +1,17 @@
 "use client";
 
-import { useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { supportWhatsAppUrl } from "@/lib/support";
 
 export function WhatsAppButton() {
-  const locale = useLocale();
+  const t = useTranslations("common");
   const { data: session } = useSession();
-  const isRtl = locale === "ar";
 
   if (!session?.user) return null;
 
-  const label = isRtl ? "تحتاج مساعدة؟" : "Need help?";
+  const label = t("need_help");
   const waUrl = supportWhatsAppUrl(session.user.gender);
 
   return (
@@ -21,12 +20,14 @@ export function WhatsAppButton() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label={label}
-      className={`fixed bottom-6 z-50 flex flex-col items-center gap-1.5 group hover:scale-105 transition-all duration-200 ${
-        isRtl ? "left-6" : "right-6"
-      }`}
+      // Sits at the inline end, so it stays on the opposite side from the
+      // dashboard sidebar in both reading directions. z-30 keeps it under every
+      // overlay surface (mobile menu drawer, sheets, dialogs are z-40/z-50) —
+      // otherwise it paints over the drawer's bottom links on narrow screens.
+      className="fixed bottom-6 end-6 z-30 flex flex-col items-center gap-1.5 group hover:scale-105 transition-all duration-200"
     >
       {/* Label above */}
-      <span dir={isRtl ? "rtl" : "ltr"} className="text-xs font-semibold text-[#2c1f12] bg-[#f2ede8]/95 border border-[#c8973a]/40 px-3 py-1.5 rounded-full shadow-md whitespace-nowrap">
+      <span className="text-xs font-semibold text-[#2c1f12] bg-[#f2ede8]/95 border border-[#c8973a]/40 px-3 py-1.5 rounded-full shadow-md whitespace-nowrap">
         {label}
       </span>
 
