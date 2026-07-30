@@ -58,13 +58,25 @@ export function translatorSupported(): boolean {
 
 /**
  * One entry per language pair. Values are the in-flight or settled creation
- * promise, so concurrent callers share a single translator, and a pair that
- * turned out to be impossible stays cached as `null` instead of being retried
- * on every utterance.
+ * promise, so concurrent callers share a single translator.
  */
 const translators = new Map<string, Promise<TranslatorInstance | null>>();
 
+/**
+ * Pairs the browser itself ruled out. This is the only permanent verdict:
+ * anything else is treated as retryable, because the most common creation
+ * failure is a missing user gesture (Chrome requires one before it will
+ * download a language pack) and that clears the moment the user clicks
+ * something.
+ */
+const impossiblePairs = new Set<string>();
+
+/** When a retryable creation last failed, so retries don't run per utterance. */
+const lastFailureAt = new Map<string, number>();
+const RETRY_COOLDOWN_MS = 5000;
+
 async function createTranslator(
+  key: string,
   sourceLanguage: string,
   targetLanguage: string,
   onProgress?: (loaded: number) => void,
@@ -73,7 +85,11 @@ async function createTranslator(
   if (!api) return null;
   try {
     const availability = await api.availability({ sourceLanguage, targetLanguage });
-    if (availability === "unavailable") return null;
+    if (availability === "unavailable") {
+      // A real platform verdict: this pair will never work here.
+      impossiblePairs.add(key);
+      return null;
+    }
     return await api.create({
       sourceLanguage,
       targetLanguage,
@@ -83,10 +99,13 @@ async function createTranslator(
         : undefined,
     });
   } catch (err) {
-    // The model download was blocked or failed, or the browser rejected the
-    // pair at creation time. Returning null keeps this pair negatively cached:
-    // retrying per utterance would just stall captions again and again.
-    console.error("[captions] translator unavailable", sourceLanguage, targetLanguage, err);
+    // Usually "no user activation" — the caller was a speech callback rather
+    // than a click. Deliberately NOT cached as impossible: forget the attempt so
+    // a later try (after any user gesture) can succeed, but note the time so we
+    // don't hammer create() once per sentence.
+    console.error("[captions] could not create translator", sourceLanguage, targetLanguage, err);
+    translators.delete(key);
+    lastFailureAt.set(key, Date.now());
     return null;
   }
 }
@@ -107,10 +126,20 @@ export function getTranslator(
   if (sourceLanguage === targetLanguage) return Promise.resolve(null);
 
   const key = `${sourceLanguage}>${targetLanguage}`;
+  if (impossiblePairs.has(key)) return Promise.resolve(null);
+
   const cached = translators.get(key);
   if (cached) return cached;
 
-  const pending = createTranslator(sourceLanguage, targetLanguage, onProgress);
+  // Back off briefly after a retryable failure, so a cold pair doesn't call
+  // create() again for every single caption line.
+  const failedAt = lastFailureAt.get(key);
+  if (failedAt !== undefined && Date.now() - failedAt < RETRY_COOLDOWN_MS) {
+    return Promise.resolve(null);
+  }
+  lastFailureAt.delete(key);
+
+  const pending = createTranslator(key, sourceLanguage, targetLanguage, onProgress);
   translators.set(key, pending);
   return pending;
 }

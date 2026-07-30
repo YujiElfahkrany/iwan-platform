@@ -4,7 +4,7 @@ import { connectDB } from "@/lib/mongodb";
 import { AssignmentSubmission } from "@/models/AssignmentSubmission";
 import { Class } from "@/models/Class";
 import { User } from "@/models/User";
-import { sendEmail, escapeHtml } from "@/lib/email";
+import { sendEmail, escapeHtml, multilingualEmail } from "@/lib/email";
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
@@ -66,19 +66,21 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const markLineAr = approved ? `<li><strong>الدرجة:</strong> ${mark} من ${sub.maxMarks}</li>` : "";
     const markLineEn = approved ? `<li><strong>Mark:</strong> ${mark} / ${sub.maxMarks}</li>` : "";
     const safeFeedback = feedback ? escapeHtml(String(feedback)) : "";
+    const markLineRu = approved ? `<li><strong>Оценка:</strong> ${mark} из ${sub.maxMarks}</li>` : "";
     const feedbackLineAr = safeFeedback ? `<li><strong>ملاحظات المعلم:</strong> ${safeFeedback}</li>` : "";
     const feedbackLineEn = safeFeedback ? `<li><strong>Teacher feedback:</strong> ${safeFeedback}</li>` : "";
+    const feedbackLineRu = safeFeedback ? `<li><strong>Комментарий преподавателя:</strong> ${safeFeedback}</li>` : "";
     const safeName = escapeHtml(student.name);
     const safeTitle = escapeHtml(sub.assignmentTitle);
     const safeClassTitle = escapeHtml(cls.title);
     try {
       await sendEmail({
         to: student.email,
-        subject: approved
-          ? `تم قبول واجبك | Assignment Approved — ${sub.assignmentTitle}`
-          : `واجبك يحتاج إلى مراجعة | Assignment Rejected — ${sub.assignmentTitle}`,
-        html: `
-          <div dir="rtl">
+        ...multilingualEmail({
+          suffix: sub.assignmentTitle,
+          ar: {
+            subject: approved ? "تم قبول واجبك" : "واجبك يحتاج إلى مراجعة",
+            body: `
             <h2>${approved ? "تم قبول واجبك" : "لم يتم قبول واجبك"}</h2>
             <p>مرحباً ${safeName}،</p>
             <p>قام معلمك بمراجعة واجبك «${safeTitle}» (الجلسة ${sub.sessionNumber}) في فصل «${safeClassTitle}».</p>
@@ -87,9 +89,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
               ${feedbackLineAr}
             </ul>
             <p>${approved ? "أحسنت! واصل العمل الرائع." : "يرجى مراجعة الملاحظات وإعادة تقديم الواجب من لوحة التحكم."}</p>
-          </div>
-          <hr />
-          <div dir="ltr">
+          `,
+          },
+          en: {
+            subject: approved ? "Assignment Approved" : "Assignment Rejected",
+            body: `
             <h2>${approved ? "Your assignment was approved" : "Your assignment was not approved"}</h2>
             <p>Hi ${safeName},</p>
             <p>Your teacher has reviewed your submission "${safeTitle}" (session ${sub.sessionNumber}) in the class "${safeClassTitle}".</p>
@@ -98,8 +102,22 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
               ${feedbackLineEn}
             </ul>
             <p>${approved ? "Well done! Keep up the great work." : "Please review the feedback and resubmit from your dashboard."}</p>
-          </div>
-        `,
+          `,
+          },
+          ru: {
+            subject: approved ? "Задание принято" : "Задание требует доработки",
+            body: `
+            <h2>${approved ? "Ваше задание принято" : "Ваше задание не принято"}</h2>
+            <p>Здравствуйте, ${safeName}!</p>
+            <p>Преподаватель проверил вашу работу «${safeTitle}» (занятие ${sub.sessionNumber}) в классе «${safeClassTitle}».</p>
+            <ul>
+              ${markLineRu}
+              ${feedbackLineRu}
+            </ul>
+            <p>${approved ? "Отличная работа! Так держать." : "Пожалуйста, ознакомьтесь с комментариями и отправьте работу заново из панели управления."}</p>
+          `,
+          },
+        }),
       });
     } catch (emailErr) {
       console.error("Failed to send assignment review email:", emailErr);

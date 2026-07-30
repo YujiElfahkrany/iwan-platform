@@ -3,13 +3,13 @@ import { redirect } from "next/navigation";
 import { connectDB } from "@/lib/mongodb";
 import { Booking } from "@/models/Booking";
 import { listPlayableByChannel } from "@/lib/recordingStore";
-import { isR2Configured, presignGetObject } from "@/lib/r2";
-import { GET_URL_TTL_S, RETENTION_DAYS, formatRecordingDuration } from "@/lib/recording";
+import { isR2Configured, presignDownloadObject, presignGetObject } from "@/lib/r2";
+import { GET_URL_TTL_S, RETENTION_DAYS, downloadFileName, formatRecordingDuration } from "@/lib/recording";
 import { formatSessionDate, PLATFORM_TIMEZONE } from "@/lib/datetime";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
-import { ArrowLeft, Film } from "lucide-react";
+import { ArrowLeft, Download, Film } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import mongoose from "mongoose";
 
@@ -30,13 +30,14 @@ export default async function SessionRecordingsPage({
 
   if (!booking) redirect(`/${locale}/dashboard/${session.user.role}`);
 
-  const isOwner =
-    booking.studentId.toString() === session.user.id ||
-    booking.teacherId.toString() === session.user.id;
+  // Recordings are for the teacher who made them. A room's recording contains
+  // every participant, so letting one student watch it back would hand them
+  // footage of their classmates — including sessions they never attended.
+  const isTeacher = booking.teacherId.toString() === session.user.id;
 
   // Unlike the live session page, a finished lesson still needs playback, so
   // "completed" bookings are allowed here too.
-  if (!isOwner || (booking.status !== "confirmed" && booking.status !== "completed")) {
+  if (!isTeacher || (booking.status !== "confirmed" && booking.status !== "completed")) {
     redirect(`/${locale}/dashboard/${session.user.role}`);
   }
 
@@ -52,6 +53,11 @@ export default async function SessionRecordingsPage({
     recordings.map(async (rec) => ({
       id: rec._id.toString(),
       src: await presignGetObject(rec.objectKey, GET_URL_TTL_S),
+      downloadSrc: await presignDownloadObject(
+        rec.objectKey,
+        GET_URL_TTL_S,
+        downloadFileName(rec.startedAt)
+      ),
       startedAtIso: rec.startedAt.toISOString(),
       // Always formatted against the platform timezone: this runs on the
       // server, which is UTC in production.
@@ -95,12 +101,27 @@ export default async function SessionRecordingsPage({
                   <video controls preload="metadata" src={video.src} className="w-full rounded-lg bg-black" />
                   {/* One wrapping paragraph: the date sits inside the translated
                       sentence, whose word order differs per locale. */}
-                  <p className="text-xs leading-relaxed text-white/60 break-words">
-                    <time dateTime={video.startedAtIso}>
-                      {t("recorded_on", { date: video.startedAtText })}
-                    </time>
-                    {video.duration && <span className="text-white/40"> · {video.duration}</span>}
-                  </p>
+                  {/* Wraps so a longer Russian or Arabic label cannot push the
+                      button out of the card on a narrow screen. */}
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="min-w-0 text-xs leading-relaxed text-white/60 break-words">
+                      <time dateTime={video.startedAtIso}>
+                        {t("recorded_on", { date: video.startedAtText })}
+                      </time>
+                      {video.duration && <span className="text-white/40"> · {video.duration}</span>}
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-auto min-h-8 min-w-0 whitespace-normal py-1"
+                      asChild
+                    >
+                      <a href={video.downloadSrc}>
+                        <Download className="h-4 w-4 me-1.5 shrink-0" />
+                        {t("download")}
+                      </a>
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             ))

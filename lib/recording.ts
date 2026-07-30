@@ -115,6 +115,16 @@ export function formatRecordingDuration(startedAt: Date, endedAt: Date): string 
   return hours > 0 ? `${hours}:${pad(minutes)}:${pad(seconds)}` : `${minutes}:${pad(seconds)}`;
 }
 
+/**
+ * Filename offered when a recording is downloaded. Plain ASCII so it survives
+ * every filesystem and the HTTP header it travels in; the timestamp is UTC,
+ * which keeps two recordings of the same lesson distinguishable.
+ */
+export function downloadFileName(startedAt: Date): string {
+  const [date, time] = startedAt.toISOString().split("T");
+  return `iwan-recording-${date}-${time.slice(0, 5).replace(":", "")}.webm`;
+}
+
 export type PartRequest =
   | { ok: true; fromPart: number; count: number }
   | { ok: false; error: string };

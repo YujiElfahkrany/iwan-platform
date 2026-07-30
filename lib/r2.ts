@@ -191,6 +191,30 @@ export function presignGetObject(key: string, ttlSeconds: number): Promise<strin
   });
 }
 
+/**
+ * A link that saves the object under `filename` instead of playing it.
+ *
+ * The filename has to be set on the signed request rather than with HTML's
+ * `download` attribute, which browsers ignore for a cross-origin link — without
+ * it the file would land as the storage key's random-looking name.
+ */
+export function presignDownloadObject(
+  key: string,
+  ttlSeconds: number,
+  filename: string
+): Promise<string> {
+  const { client, bucket } = r2();
+  return getSignedUrl(
+    client,
+    new GetObjectCommand({
+      Bucket: bucket,
+      Key: key,
+      ResponseContentDisposition: `attachment; filename="${filename}"`,
+    }),
+    { expiresIn: ttlSeconds }
+  );
+}
+
 export async function objectExists(key: string): Promise<boolean> {
   const { client, bucket } = r2();
   try {

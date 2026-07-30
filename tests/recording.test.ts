@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   ACTIVE_STALE_MS,
   buildObjectKey,
+  downloadFileName,
   formatRecordingDuration,
   isPlayable,
   isStale,
@@ -148,6 +149,26 @@ describe("formatRecordingDuration", () => {
     // Clock skew between the client's stop and the server's start must not
     // render as "-1:-30".
     expect(formatRecordingDuration(start, after(-90))).toBe("0:00");
+  });
+});
+
+describe("downloadFileName", () => {
+  it("names the file after the recording's date and time", () => {
+    expect(downloadFileName(new Date("2026-07-30T16:17:40.217Z"))).toBe(
+      "iwan-recording-2026-07-30-1617.webm"
+    );
+  });
+
+  it("keeps two recordings of the same day distinguishable", () => {
+    const morning = downloadFileName(new Date("2026-07-30T09:05:00Z"));
+    const evening = downloadFileName(new Date("2026-07-30T18:45:00Z"));
+    expect(morning).not.toBe(evening);
+  });
+
+  it("produces a plain ASCII filename safe for a header and any filesystem", () => {
+    // It travels in Content-Disposition, so quotes, spaces and non-ASCII would
+    // all need escaping — simplest to never generate them.
+    expect(downloadFileName(new Date("2026-01-02T03:04:05Z"))).toMatch(/^[a-z0-9.-]+$/);
   });
 });
 

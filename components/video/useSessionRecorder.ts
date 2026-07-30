@@ -332,7 +332,11 @@ function createController(deps: ControllerDeps): Controller {
           console.error("recording: could not finalise the failed start", completeErr);
         }
       }
-      deps.setError("Recording could not be started");
+      // Carry the real reason, not just "it failed": this string is shown in the
+      // room, so whoever hits it can report something actionable.
+      deps.setError(
+        `Recording could not be started: ${err instanceof Error ? err.message : String(err)}`
+      );
       deps.setState("error");
     } finally {
       starting = false;

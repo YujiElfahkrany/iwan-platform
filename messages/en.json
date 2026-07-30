@@ -550,7 +550,8 @@
     "mic_unavailable": "Microphone unavailable — others can't hear you",
     "camera_unavailable": "Camera unavailable — others can't see you",
     "screen_failed": "Screen sharing failed — check browser permissions",
-    "check_devices": "Check that a device is connected and permitted."
+    "check_devices": "Check that a device is connected and permitted.",
+    "download": "Download"
   },
   "notes": {
     "title": "Session notes",

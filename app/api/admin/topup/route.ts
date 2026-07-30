@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/mongodb";
 import { TopUpRequest } from "@/models/TopUpRequest";
 import { User } from "@/models/User";
-import { sendEmail, escapeHtml } from "@/lib/email";
+import { sendEmail, escapeHtml, multilingualEmail } from "@/lib/email";
 
 export async function GET() {
   const session = await auth();
@@ -57,24 +57,39 @@ export async function PATCH(req: NextRequest) {
     const user = await User.findByIdAndUpdate(topup.userId, { $inc: { balance: topup.amount } }, { new: true }).lean();
     if (user) {
       try {
+        const safeName = escapeHtml(user.name);
         await sendEmail({
           to: user.email,
-          subject: "تمت الموافقة على شحن الرصيد | Top-Up Approved — Iwan Academy",
-          html: `
-            <div dir="rtl">
+          ...multilingualEmail({
+            suffix: "Iwan Academy",
+            ar: {
+              subject: "تمت الموافقة على شحن الرصيد",
+              body: `
               <h2>تمت الموافقة على شحن الرصيد</h2>
-              <p>مرحباً ${escapeHtml(user.name)}،</p>
+              <p>مرحباً ${safeName}،</p>
               <p>تمت الموافقة على طلب شحن رصيدك بمبلغ <strong>${topup.amount} جنيه</strong>.</p>
               <p>رصيدك الحالي: <strong>${user.balance} جنيه</strong>.</p>
-            </div>
-            <hr />
-            <div dir="ltr">
+            `,
+            },
+            en: {
+              subject: "Top-Up Approved",
+              body: `
               <h2>Your top-up has been approved</h2>
-              <p>Hi ${escapeHtml(user.name)},</p>
+              <p>Hi ${safeName},</p>
               <p>Your balance top-up request of <strong>${topup.amount} LE</strong> has been approved.</p>
               <p>Your current balance: <strong>${user.balance} LE</strong>.</p>
-            </div>
-          `,
+            `,
+            },
+            ru: {
+              subject: "Пополнение баланса одобрено",
+              body: `
+              <h2>Ваше пополнение баланса одобрено</h2>
+              <p>Здравствуйте, ${safeName}!</p>
+              <p>Ваш запрос на пополнение баланса на сумму <strong>${topup.amount} EGP</strong> одобрен.</p>
+              <p>Ваш текущий баланс: <strong>${user.balance} EGP</strong>.</p>
+            `,
+            },
+          }),
         });
       } catch (emailErr) {
         console.error("Failed to send top-up approval email:", emailErr);

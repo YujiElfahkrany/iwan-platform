@@ -57,6 +57,26 @@ export interface AgoraRoomProps {
 // "cover", which fills the tile by cropping — unusable for screen shares.
 const REMOTE_VIDEO_CONFIG: VideoPlayerConfig = { fit: "contain" };
 
+/**
+ * The raw media track behind an Agora track, or null if it cannot be read.
+ *
+ * A participant who has left can linger in the room list with a track object
+ * that was never subscribed, and asking that object for its media track throws.
+ * The recording must not die because one tile is in a strange state, so a
+ * failure here just means "no picture from them".
+ */
+function safeMediaTrack(
+  track: { getMediaStreamTrack: () => MediaStreamTrack } | null | undefined
+): MediaStreamTrack | null {
+  if (!track) return null;
+  try {
+    return track.getMediaStreamTrack();
+  } catch (err) {
+    console.error("recording: could not read a participant's media track", err);
+    return null;
+  }
+}
+
 export default function AgoraRoom(props: AgoraRoomProps) {
   const client = useMemo(
     () => AgoraRTC.createClient({ mode: "rtc", codec: "vp8" }),
@@ -233,20 +253,20 @@ function Room({
     getSources: (): CompositeSources => ({
       video: [
         {
-          track: (screenTrack ?? localCameraTrack)?.getMediaStreamTrack() ?? null,
+          track: safeMediaTrack(screenTrack ?? localCameraTrack),
           label: `${displayName} (${t("you")})${screenOn ? ` — ${t("sharing_screen")}` : ""}`,
         },
         ...remoteUsers.map((user) => ({
-          track: user.videoTrack?.getMediaStreamTrack() ?? null,
+          track: safeMediaTrack(user.videoTrack),
           label: String(user.uid),
         })),
       ],
       audio: [
         // Muting only stops what is published, so the recording has to drop the
         // mic explicitly or it would capture speech the room never heard.
-        micOn ? localMicrophoneTrack?.getMediaStreamTrack() : undefined,
-        ...remoteUsers.map((user) => user.audioTrack?.getMediaStreamTrack()),
-      ].filter((track): track is MediaStreamTrack => Boolean(track)),
+        micOn ? safeMediaTrack(localMicrophoneTrack) : null,
+        ...remoteUsers.map((user) => safeMediaTrack(user.audioTrack)),
+      ].filter((track): track is MediaStreamTrack => track !== null),
     }),
   });
 
@@ -330,7 +350,12 @@ function Room({
         </p>
       )}
       {recorder.error && (
-        <p className="text-center text-red-400 text-sm px-4 break-words">{t("recording_error")}</p>
+        <p className="text-center text-red-400 text-sm px-4 break-words">
+          {t("recording_error")}{" "}
+          {/* The reason itself is untranslated on purpose: it is diagnostic, and
+              a teacher who reports it saves us a DevTools session. */}
+          <span className="text-red-400/70 text-xs">({recorder.error})</span>
+        </p>
       )}
 
       {/* Controls */}

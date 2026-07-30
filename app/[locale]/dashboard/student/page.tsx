@@ -6,11 +6,9 @@ import { Slot } from "@/models/Slot";
 import { sessionJoinInfo } from "@/lib/schedule";
 import { StudentProfile } from "@/models/StudentProfile";
 import { User } from "@/models/User";
-import { channelsWithRecordings } from "@/lib/recordingStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { RecordingsLink } from "@/components/dashboard/RecordingsLink";
 import { Link } from "@/i18n/navigation";
 import { CalendarDays, BookOpen, Video, Wallet } from "lucide-react";
 import { format } from "date-fns";
@@ -22,7 +20,6 @@ export default async function StudentOverviewPage() {
   if (!session?.user) return null;
 
   const t = await getTranslations("dashboard");
-  const tSession = await getTranslations("session");
 
   await connectDB();
 
@@ -46,14 +43,6 @@ export default async function StudentOverviewPage() {
 
   // Recordings are keyed by room, not by booking, so one query covers
   // every card on the page.
-  // Only rooms from a booking that was actually paid for: a free pending
-  // booking must not reveal that a class has recordings.
-  const recordedRooms = await channelsWithRecordings(
-    bookings
-      .filter((b) => b.status === "confirmed" || b.status === "completed")
-      .map((b) => b.meetingRoomName),
-    now
-  );
 
   return (
     <div className="space-y-6 max-w-5xl">
@@ -154,9 +143,6 @@ export default async function StudentOverviewPage() {
                         <Button size="sm" disabled className="opacity-50">
                           <Video className="h-3.5 w-3.5 me-1.5" />{t("join")}
                         </Button>
-                      )}
-                      {recordedRooms.has(b.meetingRoomName) && (
-                        <RecordingsLink bookingId={b._id.toString()} label={tSession("view_recordings")} />
                       )}
                     </div>
                   </CardContent>

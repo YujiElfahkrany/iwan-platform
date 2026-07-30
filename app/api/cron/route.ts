@@ -5,7 +5,7 @@ import { Booking } from "@/models/Booking";
 import { Class } from "@/models/Class";
 import { Slot } from "@/models/Slot";
 import { User } from "@/models/User";
-import { sendEmail, escapeHtml } from "@/lib/email";
+import { sendEmail, escapeHtml, multilingualEmail } from "@/lib/email";
 import { formatSessionDate, PLATFORM_TIMEZONE } from "@/lib/datetime";
 import { classSessionOnDay } from "@/lib/schedule";
 
@@ -40,20 +40,46 @@ export async function GET(req: NextRequest) {
     ]);
     if (!student || !teacher) continue;
 
-    const joinUrl = `${process.env.NEXT_PUBLIC_APP_URL}/en/session/${booking._id}`;
-    const sessionTime = new Date(slot.startTime).toLocaleString("en-US", {
+    const joinUrlFor = (locale: string) =>
+      `${process.env.NEXT_PUBLIC_APP_URL}/${locale}/session/${booking._id}`;
+    const slotDateOpts: Intl.DateTimeFormatOptions = {
       weekday: "long", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit",
       timeZone: PLATFORM_TIMEZONE,
+    };
+    const sessionTime = new Date(slot.startTime).toLocaleString("en-US", slotDateOpts);
+    const sessionTimeAr = new Date(slot.startTime).toLocaleString("ar-EG", slotDateOpts);
+    const sessionTimeRu = new Date(slot.startTime).toLocaleString("ru-RU", slotDateOpts);
+    const { subject, html } = multilingualEmail({
+      suffix: "Iwan Academy",
+      ar: {
+        subject: "تذكير بالجلسة",
+        body: `
+              <h2>تذكير بالجلسة — غداً!</h2>
+              <p>لديك جلسة مقررة في <strong>${sessionTimeAr}</strong>.</p>
+              <p><a href="${joinUrlFor("ar")}">انضم إلى جلستك من هنا</a></p>
+            `,
+      },
+      en: {
+        subject: "Session Reminder",
+        body: `
+              <h2>Session Reminder — Tomorrow!</h2>
+              <p>You have a session scheduled for <strong>${sessionTime}</strong>.</p>
+              <p><a href="${joinUrlFor("en")}">Join your session here</a></p>
+            `,
+      },
+      ru: {
+        subject: "Напоминание о занятии",
+        body: `
+              <h2>Напоминание о занятии — завтра!</h2>
+              <p>У вас запланировано занятие: <strong>${sessionTimeRu}</strong>.</p>
+              <p><a href="${joinUrlFor("ru")}">Присоединиться к занятию</a></p>
+            `,
+      },
     });
-    const html = `
-      <h2>Session Reminder — Tomorrow!</h2>
-      <p>You have a session scheduled for <strong>${sessionTime}</strong>.</p>
-      <p><a href="${joinUrl}">Join your session here</a></p>
-    `;
 
     await Promise.allSettled([
-      sendEmail({ to: student.email, subject: "Session Reminder — Iwan Academy", html }),
-      sendEmail({ to: teacher.email, subject: "Session Reminder — Iwan Academy", html }),
+      sendEmail({ to: student.email, subject, html }),
+      sendEmail({ to: teacher.email, subject, html }),
     ]);
     sent++;
   }
@@ -80,6 +106,7 @@ export async function GET(req: NextRequest) {
     const safeSubject = escapeHtml(cls.subject);
     const timeAr = formatSessionDate(sessionTime, "ar", PLATFORM_TIMEZONE);
     const timeEn = formatSessionDate(sessionTime, "en", PLATFORM_TIMEZONE);
+    const timeRu = formatSessionDate(sessionTime, "ru", PLATFORM_TIMEZONE);
 
     const results = await Promise.allSettled(
       participants.map((p) => {
@@ -87,22 +114,36 @@ export async function GET(req: NextRequest) {
         const safeName = escapeHtml(p.name);
         return sendEmail({
           to: p.email,
-          subject: `تذكير بفصل الغد | Class tomorrow — ${cls.title}`,
-          html: `
-            <div dir="rtl">
+          ...multilingualEmail({
+            suffix: cls.title,
+            ar: {
+              subject: "تذكير بفصل الغد",
+              body: `
               <h2>تذكير: فصلك غداً</h2>
               <p>مرحباً ${safeName}،</p>
               <p>فصل «${safeTitle}» (${safeSubject}) سيُعقد غداً في <strong>${timeAr}</strong>.</p>
               <p><a href="${appUrl}/ar/${dashboardPath}">افتح لوحة التحكم للانضمام</a></p>
-            </div>
-            <hr />
-            <div dir="ltr">
+            `,
+            },
+            en: {
+              subject: "Class tomorrow",
+              body: `
               <h2>Reminder: your class meets tomorrow</h2>
               <p>Hi ${safeName},</p>
               <p>The class "${safeTitle}" (${safeSubject}) meets tomorrow at <strong>${timeEn}</strong>.</p>
               <p><a href="${appUrl}/en/${dashboardPath}">Open your dashboard to join</a></p>
-            </div>
-          `,
+            `,
+            },
+            ru: {
+              subject: "Занятие завтра",
+              body: `
+              <h2>Напоминание: ваше занятие состоится завтра</h2>
+              <p>Здравствуйте, ${safeName}!</p>
+              <p>Занятие «${safeTitle}» (${safeSubject}) состоится завтра в <strong>${timeRu}</strong>.</p>
+              <p><a href="${appUrl}/ru/${dashboardPath}">Откройте панель управления, чтобы присоединиться</a></p>
+            `,
+            },
+          }),
         });
       })
     );

@@ -4,7 +4,7 @@ import { connectDB } from "@/lib/mongodb";
 import { AssignmentSubmission } from "@/models/AssignmentSubmission";
 import { Class } from "@/models/Class";
 import { User } from "@/models/User";
-import { sendEmail, escapeHtml } from "@/lib/email";
+import { sendEmail, escapeHtml, multilingualEmail } from "@/lib/email";
 
 const MAX_BYTES = 5 * 1024 * 1024;
 
@@ -66,22 +66,36 @@ export async function POST(req: NextRequest) {
     try {
       await sendEmail({
         to: teacher.email,
-        subject: `تسليم واجب جديد | New Assignment Submission — ${assignment.assignmentTitle}`,
-        html: `
-          <div dir="rtl">
+        ...multilingualEmail({
+          suffix: assignment.assignmentTitle,
+          ar: {
+            subject: "تسليم واجب جديد",
+            body: `
             <h2>تسليم واجب جديد</h2>
             <p>مرحباً ${safeTeacherName}،</p>
             <p>قام الطالب <strong>${studentName}</strong> بتسليم واجب «${safeAssignmentTitle}» (بعد الجلسة ${sessionNumber}) في فصل «${safeClassTitle}».</p>
             <p>سجّل الدخول إلى لوحة التحكم لمراجعة التسليم وتقييمه.</p>
-          </div>
-          <hr />
-          <div dir="ltr">
+          `,
+          },
+          en: {
+            subject: "New Assignment Submission",
+            body: `
             <h2>New assignment submission</h2>
             <p>Hi ${safeTeacherName},</p>
             <p>Student <strong>${studentName}</strong> submitted "${safeAssignmentTitle}" (after session ${sessionNumber}) in the class "${safeClassTitle}".</p>
             <p>Log in to your dashboard to review and grade the submission.</p>
-          </div>
-        `,
+          `,
+          },
+          ru: {
+            subject: "Новая сдача задания",
+            body: `
+            <h2>Новая сдача задания</h2>
+            <p>Здравствуйте, ${safeTeacherName}!</p>
+            <p>Студент <strong>${studentName}</strong> сдал задание «${safeAssignmentTitle}» (после занятия ${sessionNumber}) в классе «${safeClassTitle}».</p>
+            <p>Войдите в панель управления, чтобы проверить и оценить работу.</p>
+          `,
+          },
+        }),
       });
     } catch (emailErr) {
       console.error("Failed to send submission notification email:", emailErr);

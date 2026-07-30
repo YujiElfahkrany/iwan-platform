@@ -2,50 +2,57 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { connectDB } from "@/lib/mongodb";
 import { User } from "@/models/User";
-import { sendEmail, escapeHtml } from "@/lib/email";
-import { routing } from "@/i18n/routing";
+import { sendEmail, escapeHtml, multilingualEmail } from "@/lib/email";
 
 const TOKEN_TTL_MS = 60 * 60 * 1000; // 1 hour
 
-const RESET_EMAIL = {
-  ar: {
-    subject: "إعادة تعيين كلمة المرور — أكاديمية إيوان",
-    html: (name: string, resetUrl: string) => `
-      <div dir="rtl">
+/**
+ * Builds the trilingual reset email. Each language links to the reset page in
+ * its own locale, carrying the same one-hour token.
+ */
+function resetEmail(name: string, resetUrlFor: (locale: string) => string) {
+  const safeName = escapeHtml(name);
+  return multilingualEmail({
+    suffix: "Iwan Academy",
+    ar: {
+      subject: "إعادة تعيين كلمة المرور",
+      body: `
         <h2>إعادة تعيين كلمة المرور</h2>
-        <p>مرحباً ${escapeHtml(name)}،</p>
+        <p>مرحباً ${safeName}،</p>
         <p>تلقينا طلباً لإعادة تعيين كلمة المرور الخاصة بحسابك. اضغط على الرابط أدناه لتعيين كلمة مرور جديدة:</p>
-        <p><a href="${resetUrl}">إعادة تعيين كلمة المرور</a></p>
+        <p><a href="${resetUrlFor("ar")}">إعادة تعيين كلمة المرور</a></p>
         <p>هذا الرابط صالح لمدة ساعة واحدة. إذا لم تطلب إعادة التعيين، يمكنك تجاهل هذه الرسالة.</p>
-      </div>
-    `,
-  },
-  en: {
-    subject: "Reset your password — Iwan Academy",
-    html: (name: string, resetUrl: string) => `
-      <h2>Reset your password</h2>
-      <p>Hi ${escapeHtml(name)},</p>
-      <p>We received a request to reset the password for your account. Click the link below to choose a new password:</p>
-      <p><a href="${resetUrl}">Reset password</a></p>
-      <p>This link is valid for 1 hour. If you didn't request a reset, you can safely ignore this email.</p>
-    `,
-  },
-  ru: {
-    subject: "Сброс пароля — Академия Айван",
-    html: (name: string, resetUrl: string) => `
-      <h2>Сброс пароля</h2>
-      <p>Здравствуйте, ${escapeHtml(name)}!</p>
-      <p>Мы получили запрос на сброс пароля для вашего аккаунта. Перейдите по ссылке ниже, чтобы задать новый пароль:</p>
-      <p><a href="${resetUrl}">Сбросить пароль</a></p>
-      <p>Ссылка действительна в течение 1 часа. Если вы не запрашивали сброс, просто проигнорируйте это письмо.</p>
-    `,
-  },
-} as const;
+      `,
+    },
+    en: {
+      subject: "Reset your password",
+      body: `
+        <h2>Reset your password</h2>
+        <p>Hi ${safeName},</p>
+        <p>We received a request to reset the password for your account. Click the link below to choose a new password:</p>
+        <p><a href="${resetUrlFor("en")}">Reset password</a></p>
+        <p>This link is valid for 1 hour. If you didn't request a reset, you can safely ignore this email.</p>
+      `,
+    },
+    ru: {
+      subject: "Сброс пароля",
+      body: `
+        <h2>Сброс пароля</h2>
+        <p>Здравствуйте, ${safeName}!</p>
+        <p>Мы получили запрос на сброс пароля для вашего аккаунта. Перейдите по ссылке ниже, чтобы задать новый пароль:</p>
+        <p><a href="${resetUrlFor("ru")}">Сбросить пароль</a></p>
+        <p>Ссылка действительна в течение 1 часа. Если вы не запрашивали сброс, просто проигнорируйте это письмо.</p>
+      `,
+    },
+  });
+}
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { email, locale } = body;
+    // `locale` may still be sent by the client; it is ignored because every
+    // email now carries all three platform languages.
+    const { email } = body;
 
     if (!email || typeof email !== "string") {
       return NextResponse.json({ error: "Missing email" }, { status: 400 });
@@ -65,22 +72,13 @@ export async function POST(req: NextRequest) {
       await user.save();
 
       const appUrl = req.nextUrl.origin;
-      // hasOwn (not `in`): locale comes from the request body, and inherited
-      // keys like "toString" must not select a template.
-      const lang = (
-        typeof locale === "string" && Object.hasOwn(RESET_EMAIL, locale)
-          ? locale
-          : routing.defaultLocale
-      ) as keyof typeof RESET_EMAIL;
-      const resetUrl = `${appUrl}/${lang}/auth/reset-password?token=${token}`;
-
-      const template = RESET_EMAIL[lang];
+      const resetUrlFor = (lang: string) =>
+        `${appUrl}/${lang}/auth/reset-password?token=${token}`;
 
       try {
         await sendEmail({
           to: user.email,
-          subject: template.subject,
-          html: template.html(user.name, resetUrl),
+          ...resetEmail(user.name, resetUrlFor),
         });
       } catch (emailErr) {
         console.error("Failed to send password reset email:", emailErr);

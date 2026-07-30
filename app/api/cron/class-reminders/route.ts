@@ -4,7 +4,7 @@ import { isAuthorizedCronRequest } from "@/lib/cronAuth";
 import { Class } from "@/models/Class";
 import { Booking } from "@/models/Booking";
 import { User } from "@/models/User";
-import { sendEmail, escapeHtml } from "@/lib/email";
+import { sendEmail, escapeHtml, multilingualEmail } from "@/lib/email";
 import { nearestClassSessionTime } from "@/lib/schedule";
 
 const REMINDER_MINUTES = 10;
@@ -53,24 +53,39 @@ export async function GET(req: NextRequest) {
         const safeName = escapeHtml(s.name);
         const joinLinkAr = bookingId ? `<p><a href="${appUrl}/ar/session/${bookingId}">انضم إلى الجلسة من هنا</a></p>` : "";
         const joinLinkEn = bookingId ? `<p><a href="${appUrl}/en/session/${bookingId}">Join your session here</a></p>` : "";
+        const joinLinkRu = bookingId ? `<p><a href="${appUrl}/ru/session/${bookingId}">Присоединиться к занятию</a></p>` : "";
         return sendEmail({
           to: s.email,
-          subject: `فصلك يبدأ قريباً | Your class starts soon — ${cls.title}`,
-          html: `
-            <div dir="rtl">
+          ...multilingualEmail({
+            suffix: cls.title,
+            ar: {
+              subject: "فصلك يبدأ قريباً",
+              body: `
               <h2>فصلك يبدأ خلال ${diff} دقائق</h2>
               <p>مرحباً ${safeName}،</p>
               <p>فصل «${safeTitle}» (${safeSubject}) سيبدأ قريباً.</p>
               ${joinLinkAr}
-            </div>
-            <hr />
-            <div dir="ltr">
+            `,
+            },
+            en: {
+              subject: "Your class starts soon",
+              body: `
               <h2>Your class starts in ${diff} minutes</h2>
               <p>Hi ${safeName},</p>
               <p>The class "${safeTitle}" (${safeSubject}) is starting soon.</p>
               ${joinLinkEn}
-            </div>
-          `,
+            `,
+            },
+            ru: {
+              subject: "Ваше занятие скоро начнётся",
+              body: `
+              <h2>Ваше занятие начнётся через ${diff} минут</h2>
+              <p>Здравствуйте, ${safeName}!</p>
+              <p>Занятие «${safeTitle}» (${safeSubject}) скоро начнётся.</p>
+              ${joinLinkRu}
+            `,
+            },
+          }),
         });
       })
     );

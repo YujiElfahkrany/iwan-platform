@@ -165,7 +165,16 @@ export class SessionComposite {
    */
   private sync(): void {
     if (this.stopped) return;
-    const sources = this.getSources();
+    let sources: CompositeSources;
+    try {
+      sources = this.getSources();
+    } catch (err) {
+      // Whatever is wrong with the room right now, keep recording what we
+      // already have rather than losing the whole session; the next tick tries
+      // again.
+      console.error("recording: could not read the room's tracks", err);
+      return;
+    }
 
     const liveVideoIds = new Set<string>();
     this.tiles = sources.video.map(({ track, label }) => {

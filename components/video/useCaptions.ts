@@ -166,6 +166,39 @@ export function useCaptions({
     return () => clearInterval(id);
   }, [hasVisible]);
 
+  // Warm up the translators needed to *read* other people, which is a different
+  // set from the ones needed to send. This has to be kicked off by a real user
+  // gesture: Chrome refuses to create a translator (and so to fetch the language
+  // pack) from a plain callback, and an incoming caption arrives in a message
+  // handler. Without this a viewer who never speaks could never translate
+  // anything, and every line stayed in the speaker's language.
+  useEffect(() => {
+    if (!translatorAvailable) return;
+    let done = false;
+
+    function prepare() {
+      void Promise.all(
+        translationTargets(viewerLocale).map((source) => getTranslator(source, viewerLocale)),
+      ).then((results) => {
+        // Keep listening until one pair actually works: the first gesture can
+        // still fail (e.g. the pack download is refused) and a later click may
+        // succeed.
+        if (!results.some((translator) => translator !== null)) return;
+        done = true;
+        window.removeEventListener("pointerdown", prepare);
+        window.removeEventListener("keydown", prepare);
+      });
+    }
+
+    window.addEventListener("pointerdown", prepare);
+    window.addEventListener("keydown", prepare);
+    return () => {
+      if (done) return;
+      window.removeEventListener("pointerdown", prepare);
+      window.removeEventListener("keydown", prepare);
+    };
+  }, [translatorAvailable, viewerLocale]);
+
   // Warm up the translators this speaker will need, so the first sentence isn't
   // the one that pays for the model download.
   useEffect(() => {
